@@ -7,6 +7,7 @@ const port = Number(process.env.PORT) || 4173;
 const distDir = resolve('dist');
 const qudtOrigin = 'https://qudt.org';
 const coscineApiOrigin = 'https://coscine.rwth-aachen.de';
+const aimsApiOrigin = 'https://aims-backend.tools.coscine.dev';
 
 const contentTypes = new Map([
   ['.css', 'text/css; charset=utf-8'],
@@ -64,6 +65,31 @@ async function proxyQudt(request, response) {
   const upstreamResponse = await fetch(targetUrl, {
     headers: {
       Accept: request.headers.accept || 'text/turtle, */*;q=0.1',
+    },
+  });
+  const headers = Object.fromEntries(upstreamResponse.headers.entries());
+
+  delete headers['content-encoding'];
+  delete headers['content-length'];
+  headers['access-control-allow-origin'] = '*';
+
+  response.writeHead(upstreamResponse.status, headers);
+
+  if (upstreamResponse.body) {
+    for await (const chunk of upstreamResponse.body) {
+      response.write(chunk);
+    }
+  }
+
+  response.end();
+}
+
+async function proxyAims(request, response) {
+  const targetPath = request.url.replace(/^\/aims-api/, '') || '/';
+  const targetUrl = new URL(targetPath, aimsApiOrigin);
+  const upstreamResponse = await fetch(targetUrl, {
+    headers: {
+      Accept: request.headers.accept || 'application/json',
     },
   });
   const headers = Object.fromEntries(upstreamResponse.headers.entries());
@@ -147,6 +173,11 @@ async function serveStatic(request, response) {
 
 const server = createServer(async (request, response) => {
   try {
+    if (request.url.startsWith('/aims-api')) {
+      await proxyAims(request, response);
+      return;
+    }
+
     if (request.url.startsWith('/qudt')) {
       await proxyQudt(request, response);
       return;
