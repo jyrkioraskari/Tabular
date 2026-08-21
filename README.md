@@ -6,7 +6,27 @@ columns, create RDF metadata, inspect RDF in a store, and export an RO-Crate ZIP
 
 ![TabulatRDM screen](screen.png)
 
-## Running the App
+## Installing on Windows (Students)
+
+Students do not need Node.js, npm, or a command prompt. Download one of the
+Windows releases supplied by the course:
+
+- `TabularRDM-...-nsis.exe`: installs TabularRDM for the current Windows user.
+- `TabularRDM-...-portable.exe`: runs without installation and is suitable for
+  computers where the student has no administrator rights.
+
+Start the application from the Start menu, desktop shortcut, or portable
+executable. TabularRDM runs a private application service bound only to the
+computer's loopback interface. Windows Firewall should not need an inbound
+network exception.
+
+QUDT, AIMS profile search, and Coscine integration require internet access.
+Selecting and previewing local spreadsheets does not upload the spreadsheet to
+those services.
+
+## Running from Source (Developers)
+
+Use a current Node.js LTS release. Install dependencies:
 
 Install dependencies:
 
@@ -35,6 +55,32 @@ npm run serve
 The production server serves files from `dist/` and proxies `/qudt` requests to
 `https://qudt.org` so QUDT vocabulary data can be fetched without browser CORS
 issues.
+
+Run the desktop application in development:
+
+```sh
+npm run desktop
+```
+
+## Building a Windows Release
+
+On a Windows build computer, install dependencies and create both installer and
+portable artifacts:
+
+```sh
+npm ci
+npm run dist:windows
+```
+
+Artifacts are written to `release/`. Only maintainers run these commands;
+students receive the generated executable. For public distribution, sign the
+executables with the institution's Windows code-signing certificate to avoid
+Microsoft SmartScreen warnings. Test releases on clean Windows 10 and Windows
+11 systems using a non-administrator account.
+
+If a signing certificate is not yet available, publish the executable from an
+official institution-controlled location together with its SHA-256 checksum and
+document the SmartScreen warning students may see.
 
 ## Main Files
 

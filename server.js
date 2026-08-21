@@ -2,9 +2,10 @@ import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const port = Number(process.env.PORT) || 4173;
-const distDir = resolve('dist');
+const defaultPort = Number(process.env.PORT) || 4173;
+const distDir = resolve(fileURLToPath(new URL('./dist', import.meta.url)));
 const qudtOrigin = 'https://qudt.org';
 const coscineApiOrigin = 'https://coscine.rwth-aachen.de';
 const aimsApiOrigin = 'https://aims-backend.tools.coscine.dev';
@@ -171,29 +172,59 @@ async function serveStatic(request, response) {
   }
 }
 
-const server = createServer(async (request, response) => {
-  try {
-    if (request.url.startsWith('/aims-api')) {
-      await proxyAims(request, response);
-      return;
+export function createTabularRdmServer() {
+  return createServer(async (request, response) => {
+    try {
+      if (request.url.startsWith('/aims-api')) {
+        await proxyAims(request, response);
+        return;
+      }
+
+      if (request.url.startsWith('/qudt')) {
+        await proxyQudt(request, response);
+        return;
+      }
+
+      if (request.url.startsWith('/coscine-api')) {
+        await proxyCoscine(request, response);
+        return;
+      }
+
+      await serveStatic(request, response);
+    } catch (error) {
+      send(response, 502, error?.message || 'Proxy request failed.');
     }
+  });
+}
 
-    if (request.url.startsWith('/qudt')) {
-      await proxyQudt(request, response);
-      return;
-    }
+export function startTabularRdmServer({ port = defaultPort, host = '127.0.0.1' } = {}) {
+  const server = createTabularRdmServer();
 
-    if (request.url.startsWith('/coscine-api')) {
-      await proxyCoscine(request, response);
-      return;
-    }
+  return new Promise((resolveStart, rejectStart) => {
+    const handleError = (error) => {
+      rejectStart(error);
+    };
 
-    await serveStatic(request, response);
-  } catch (error) {
-    send(response, 502, error?.message || 'Proxy request failed.');
-  }
-});
+    server.once('error', handleError);
+    server.listen(port, host, () => {
+      server.off('error', handleError);
+      const address = server.address();
+      const selectedPort = typeof address === 'object' && address ? address.port : port;
 
-server.listen(port, () => {
-  console.log(`TabulatRDM server listening on http://localhost:${port}`);
-});
+      resolveStart({
+        server,
+        url: `http://${host}:${selectedPort}`,
+      });
+    });
+  });
+}
+
+const isCommandLineEntry = process.argv[1]
+  ? resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+  : false;
+
+if (isCommandLineEntry) {
+  startTabularRdmServer().then(({ url }) => {
+    console.log(`TabularRDM server listening on ${url}`);
+  });
+}
