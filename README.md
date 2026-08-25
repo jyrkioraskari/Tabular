@@ -8,8 +8,7 @@ columns, create RDF metadata, inspect RDF in a store, and export an RO-Crate ZIP
 
 ## Installing on Windows (Students)
 
-Students do not need Node.js, npm, or a command prompt. Download one of the
-Windows releases supplied by the course:
+Students do not need Node.js, npm, or a command prompt. Download one of the Windows releases available at: https://github.com/jyrkioraskari/TabularRDM/releases :
 
 - `TabularRDM-...-nsis.exe`: installs TabularRDM for the current Windows user.
 - `TabularRDM-...-portable.exe`: runs without installation and is suitable for
