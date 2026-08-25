@@ -11,7 +11,7 @@ import NodeInfoButton from './NodeInfoButton';
 export default function ROCrateNode({ data, selected }) {
   /**
    * Implements the RO-Crate download template:
-   * data.json contains connected RDF content, workbook sheets become CSV files,
+   * metadata.ttl contains connected Turtle RDF, workbook sheets become CSV files,
    * and export_config can override dataset metadata.
    */
   const handleCrateDownload = useCallback(async () => {

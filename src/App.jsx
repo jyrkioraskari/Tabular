@@ -37,6 +37,8 @@ import nfdi4ingLogo from './assets/nfdi4ing_24.svg';
 
 const nodeHandlers = {
   onTabularLoaded: undefined,
+  onTabularHasHeaderChange: undefined,
+  onTabularTransposeChange: undefined,
   onColumnDescriptionFieldsChange: undefined,
   onMetadataRdfChange: undefined,
   onProfileSelect: undefined,
@@ -45,7 +47,14 @@ const nodeHandlers = {
 };
 
 function TabularFileNodeType(props) {
-  return <TabularFileNode {...props} onTabularLoaded={nodeHandlers.onTabularLoaded} />;
+  return (
+    <TabularFileNode
+      {...props}
+      onTabularLoaded={nodeHandlers.onTabularLoaded}
+      onHasHeaderChange={nodeHandlers.onTabularHasHeaderChange}
+      onTransposeChange={nodeHandlers.onTabularTransposeChange}
+    />
+  );
 }
 
 function ColumnDescriptionNodeType(props) {
@@ -107,7 +116,12 @@ const initialNodes = [
     id: 'tabular-source',
     type: 'tabularFile',
     position: { x: 40, y: 80 },
-    data: { label: 'Tabular file 1', language: 'en' },
+    data: {
+      label: 'Tabular file 1',
+      language: 'en',
+      hasHeader: true,
+      transpose: false,
+    },
   },
   {
     id: 'tabular',
@@ -324,12 +338,61 @@ function isEmptyRow(row) {
   return row.every((cell) => normalizeCellValue(cell).trim().length === 0);
 }
 
+function getEffectiveColumnCount(row) {
+  for (let index = row.length - 1; index >= 0; index -= 1) {
+    if (normalizeCellValue(row[index]).trim().length > 0) {
+      return index + 1;
+    }
+  }
+
+  return 0;
+}
+
+function readWorksheetRows(worksheet, transpose = false) {
+  const rows = XLSX.utils.sheet_to_json(worksheet, {
+    header: 1,
+    blankrows: transpose,
+    defval: '',
+    raw: false,
+  });
+  let usableRows;
+
+  if (transpose) {
+    const initialColumnCount = getEffectiveColumnCount(rows[0] ?? []);
+    const stopIndex = rows.findIndex(
+      (row) =>
+        isEmptyRow(row) || getEffectiveColumnCount(row) !== initialColumnCount,
+    );
+    usableRows = rows.slice(0, stopIndex < 0 ? rows.length : stopIndex);
+  } else {
+    usableRows = rows.filter((row) => Array.isArray(row) && !isEmptyRow(row));
+  }
+
+  if (!transpose || usableRows.length === 0) {
+    return usableRows;
+  }
+
+  const columnCount = usableRows.reduce(
+    (maxColumns, row) => Math.max(maxColumns, row.length),
+    0,
+  );
+
+  return Array.from({ length: columnCount }, (_, columnIndex) =>
+    usableRows.map((row) => normalizeCellValue(row[columnIndex])),
+  );
+}
+
 /**
  * Parses a loaded workbook into two shapes:
  * - a small first-sheet preview used by preview/description nodes
  * - all sheets as row objects for later RO-Crate CSV export
  */
-function parseTabularWorkbook(buffer, previewRowCount = 5) {
+function parseTabularWorkbook(
+  buffer,
+  previewRowCount = 5,
+  hasHeader = true,
+  transpose = false,
+) {
   const workbook = XLSX.read(buffer, {
     type: 'array',
     cellDates: true,
@@ -341,21 +404,32 @@ function parseTabularWorkbook(buffer, previewRowCount = 5) {
   }
 
   const worksheet = workbook.Sheets[sheetName];
-  const tableRows = XLSX.utils
-    .sheet_to_json(worksheet, {
-      header: 1,
-      blankrows: false,
-      defval: '',
-      raw: false,
-    })
-    .filter((row) => Array.isArray(row) && !isEmptyRow(row));
-  const sheets = workbook.SheetNames.map((name) => ({
-    name,
-    rows: XLSX.utils.sheet_to_json(workbook.Sheets[name], {
-      defval: '',
-      raw: false,
-    }),
-  }));
+  const tableRows = readWorksheetRows(worksheet, transpose);
+  const sheets = workbook.SheetNames.map((name) => {
+    const sheetRows = readWorksheetRows(workbook.Sheets[name], transpose);
+    const sheetColumnCount = sheetRows.reduce(
+      (maxColumns, row) => Math.max(maxColumns, row.length),
+      0,
+    );
+    const sheetHeaders = hasHeader
+      ? Array.from({ length: sheetColumnCount }, (_, index) =>
+          normalizeCellValue(sheetRows[0]?.[index]),
+        )
+      : Array.from(
+          { length: sheetColumnCount },
+          (_, index) => `Column ${index + 1}`,
+        );
+    const firstSheetDataRow = hasHeader ? 1 : 0;
+
+    return {
+      name,
+      rows: sheetRows.slice(firstSheetDataRow).map((row) =>
+        Object.fromEntries(
+          sheetHeaders.map((header, index) => [header, normalizeCellValue(row[index])]),
+        ),
+      ),
+    };
+  });
 
   if (tableRows.length === 0) {
     return { headers: [], rows: [], rowCount: 0, sheetName, sheets };
@@ -365,14 +439,23 @@ function parseTabularWorkbook(buffer, previewRowCount = 5) {
     (maxColumns, row) => Math.max(maxColumns, row.length),
     0,
   );
-  const headers = Array.from({ length: columnCount }, (_, index) =>
-    normalizeCellValue(tableRows[0][index]),
-  );
-  const rows = tableRows.slice(1, previewRowCount + 1).map((row) =>
+  const headers = hasHeader
+    ? Array.from({ length: columnCount }, (_, index) =>
+        normalizeCellValue(tableRows[0][index]),
+      )
+    : Array.from({ length: columnCount }, (_, index) => `Column ${index + 1}`);
+  const firstDataRow = hasHeader ? 1 : 0;
+  const rows = tableRows.slice(firstDataRow, firstDataRow + previewRowCount).map((row) =>
     Array.from({ length: columnCount }, (_, index) => normalizeCellValue(row[index])),
   );
 
-  return { headers, rows, rowCount: Math.max(tableRows.length - 1, 0), sheetName, sheets };
+  return {
+    headers,
+    rows,
+    rowCount: Math.max(tableRows.length - firstDataRow, 0),
+    sheetName,
+    sheets,
+  };
 }
 
 /**
@@ -787,6 +870,7 @@ export default function App() {
   const nodesRef = useRef(nodes);
   const edgesRef = useRef(edges);
   const tabularMemoryRef = useRef(new Map());
+  const tabularBuffersRef = useRef(new Map());
   const profileDefinitionRequestsRef = useRef(new Map());
 
   useEffect(() => {
@@ -828,9 +912,10 @@ export default function App() {
   );
 
   const onTabularLoaded = useCallback(
-    (nodeId, fileName, buffer) => {
-      const preview = parseTabularWorkbook(buffer, 5);
+    (nodeId, fileName, buffer, hasHeader = true, transpose = false) => {
+      const preview = parseTabularWorkbook(buffer, 5, hasHeader, transpose);
       tabularMemoryRef.current.set(nodeId, preview);
+      tabularBuffersRef.current.set(nodeId, { fileName, buffer });
 
       setNodes((currentNodes) => {
         const nextNodes = deriveNodeData(
@@ -841,6 +926,8 @@ export default function App() {
                   data: {
                     ...node.data,
                     fileName,
+                    hasHeader,
+                    transpose,
                     rowCount: preview.rowCount,
                     sheetName: preview.sheetName,
                   },
@@ -856,6 +943,64 @@ export default function App() {
       });
     },
     [setNodes],
+  );
+
+  const onTabularHasHeaderChange = useCallback(
+    (nodeId, hasHeader) => {
+      const loadedFile = tabularBuffersRef.current.get(nodeId);
+
+      if (loadedFile) {
+        const node = nodesRef.current.find((candidate) => candidate.id === nodeId);
+        onTabularLoaded(
+          nodeId,
+          loadedFile.fileName,
+          loadedFile.buffer,
+          hasHeader,
+          node?.data.transpose === true,
+        );
+        return;
+      }
+
+      setNodes((currentNodes) => {
+        const nextNodes = currentNodes.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, hasHeader } }
+            : node,
+        );
+        nodesRef.current = nextNodes;
+        return nextNodes;
+      });
+    },
+    [onTabularLoaded, setNodes],
+  );
+
+  const onTabularTransposeChange = useCallback(
+    (nodeId, transpose) => {
+      const loadedFile = tabularBuffersRef.current.get(nodeId);
+      const node = nodesRef.current.find((candidate) => candidate.id === nodeId);
+
+      if (loadedFile) {
+        onTabularLoaded(
+          nodeId,
+          loadedFile.fileName,
+          loadedFile.buffer,
+          node?.data.hasHeader !== false,
+          transpose,
+        );
+        return;
+      }
+
+      setNodes((currentNodes) => {
+        const nextNodes = currentNodes.map((candidate) =>
+          candidate.id === nodeId
+            ? { ...candidate, data: { ...candidate.data, transpose } }
+            : candidate,
+        );
+        nodesRef.current = nextNodes;
+        return nextNodes;
+      });
+    },
+    [onTabularLoaded, setNodes],
   );
 
   const onProfileSelect = useCallback(
@@ -1032,6 +1177,8 @@ export default function App() {
 
   Object.assign(nodeHandlers, {
     onTabularLoaded,
+    onTabularHasHeaderChange,
+    onTabularTransposeChange,
     onColumnDescriptionFieldsChange,
     onMetadataRdfChange,
     onProfileSelect,
@@ -1078,6 +1225,7 @@ export default function App() {
   const onNodesDelete = useCallback((deletedNodes) => {
     for (const node of deletedNodes) {
       tabularMemoryRef.current.delete(node.id);
+      tabularBuffersRef.current.delete(node.id);
 
       if (node.type === 'profileSearch') {
         profileDefinitionRequestsRef.current.get(node.id)?.abort();

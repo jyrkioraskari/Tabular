@@ -9,7 +9,7 @@ columns, create RDF metadata, inspect RDF in a store, and export an RO-Crate ZIP
 ## Installing on Windows (Students)
 
 Students do not need Node.js, npm, or a command prompt. Download one of the
-Windows releases available at:  https://github.com/jyrkioraskari/TabularRDM/releases
+Windows releases supplied by the course:
 
 - `TabularRDM-...-nsis.exe`: installs TabularRDM for the current Windows user.
 - `TabularRDM-...-portable.exe`: runs without installation and is suitable for
@@ -143,9 +143,9 @@ document the SmartScreen warning students may see.
   loaded Turtle, and allows downloading `metadata.ttl`.
 
 `src/nodes/ROCrateNode.jsx`
-: Creates an RO-Crate ZIP using ro-crate and jszip. It includes `data.json` from
-  connected RDF content, CSV exports for connected spreadsheet sheets under
-  `original_data/`, and `ro-crate-metadata.json`.
+: Creates an RO-Crate ZIP using ro-crate and jszip. It includes `metadata.ttl`
+  containing connected Turtle RDF, CSV exports for connected spreadsheet sheets under
+  `original_data/`, and an RO-Crate 1.3 `ro-crate-metadata.json` descriptor.
 
 ## Service Files
 
