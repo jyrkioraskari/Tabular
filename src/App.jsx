@@ -133,6 +133,11 @@ const initialNodes = [
 
 const tabularPreviewEdgeStyle = { stroke: '#2563eb', strokeWidth: 2 };
 const savedLayoutsStorageKey = 'tabular-rdm.saved-layouts.v1';
+const rdfProducerNodeTypes = new Set([
+  'metadataForm',
+  'columnDescription',
+  'headerSchema',
+]);
 
 /**
  * Highlights connections that carry workflow data between compatible nodes.
@@ -179,6 +184,71 @@ function applySemanticEdgeStyle(edge, nodes) {
   }
 
   return edge;
+}
+
+function edgeExists(edges, source, target) {
+  return edges.some((edge) => edge.source === source && edge.target === target);
+}
+
+/**
+ * Keeps RDF-producing nodes from bypassing the RDF Store on their way to an
+ * RO-Crate. A store already connected to the crate is reused; otherwise one is
+ * inserted halfway between the producer and crate. Non-RDF inputs, such as a
+ * tabular file carrying sheet data, remain connected directly to the crate.
+ */
+function routeRdfConnectionThroughStore({ connection, nodes, edges, createStoreNode }) {
+  const sourceNode = nodes.find((node) => node.id === connection.source);
+  const targetNode = nodes.find((node) => node.id === connection.target);
+
+  if (!rdfProducerNodeTypes.has(sourceNode?.type) || targetNode?.type !== 'roCrate') {
+    return {
+      nodes,
+      edges: addEdge(applySemanticEdgeStyle(connection, nodes), edges),
+    };
+  }
+
+  const connectedStore = nodes.find(
+    (node) =>
+      node.type === 'rdfStore' && edgeExists(edges, node.id, targetNode.id),
+  );
+  const storeNode = connectedStore ?? createStoreNode(sourceNode, targetNode);
+  const nextNodes = connectedStore ? nodes : [...nodes, storeNode];
+  const directRdfEdges = edges.filter(
+    (edge) =>
+      edge.target === targetNode.id &&
+      rdfProducerNodeTypes.has(
+        nodes.find((node) => node.id === edge.source)?.type,
+      ),
+  );
+  const producerIds = new Set([
+    sourceNode.id,
+    ...directRdfEdges.map((edge) => edge.source),
+  ]);
+  let nextEdges = edges.filter((edge) => !directRdfEdges.includes(edge));
+
+  for (const producerId of producerIds) {
+    if (!edgeExists(nextEdges, producerId, storeNode.id)) {
+      nextEdges = addEdge(
+        applySemanticEdgeStyle(
+          { source: producerId, target: storeNode.id },
+          nextNodes,
+        ),
+        nextEdges,
+      );
+    }
+  }
+
+  if (!edgeExists(nextEdges, storeNode.id, targetNode.id)) {
+    nextEdges = addEdge(
+      applySemanticEdgeStyle(
+        { source: storeNode.id, target: targetNode.id },
+        nextNodes,
+      ),
+      nextEdges,
+    );
+  }
+
+  return { nodes: nextNodes, edges: nextEdges };
 }
 
 const initialEdges = [
@@ -1187,21 +1257,43 @@ export default function App() {
   });
 
   const onConnect = useCallback(
-    (connection) =>
-      setEdges((currentEdges) => {
-        const styledConnection = applySemanticEdgeStyle(connection, nodesRef.current);
-        const nextEdges = addEdge(styledConnection, currentEdges);
-        edgesRef.current = nextEdges;
+    (connection) => {
+      const createStoreNode = (sourceNode, targetNode) => {
+        nodeIdCountRef.current += 1;
+        const nextTypeCount = (nodeTypeCountsRef.current.rdfStore ?? 0) + 1;
+        nodeTypeCountsRef.current.rdfStore = nextTypeCount;
 
-        setNodes((currentNodes) => {
-          const nextNodes = deriveNodeData(currentNodes, nextEdges, tabularMemoryRef.current);
-          nodesRef.current = nextNodes;
-          return nextNodes;
-        });
+        return {
+          id: `node-${nodeIdCountRef.current}`,
+          type: 'rdfStore',
+          position: {
+            x: (sourceNode.position.x + targetNode.position.x) / 2,
+            y: (sourceNode.position.y + targetNode.position.y) / 2,
+          },
+          data: {
+            label: `RDF Store ${nextTypeCount}`,
+            language: globalLanguage,
+          },
+        };
+      };
+      const routedGraph = routeRdfConnectionThroughStore({
+        connection,
+        nodes: nodesRef.current,
+        edges: edgesRef.current,
+        createStoreNode,
+      });
+      const nextNodes = deriveNodeData(
+        routedGraph.nodes,
+        routedGraph.edges,
+        tabularMemoryRef.current,
+      );
 
-        return nextEdges;
-      }),
-    [setEdges, setNodes],
+      nodesRef.current = nextNodes;
+      edgesRef.current = routedGraph.edges;
+      setNodes(nextNodes);
+      setEdges(routedGraph.edges);
+    },
+    [globalLanguage, setEdges, setNodes],
   );
 
   const onEdgesChange = useCallback(
