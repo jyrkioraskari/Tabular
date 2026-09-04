@@ -16,7 +16,6 @@ import PreviewTabularDataNode from './nodes/PreviewTabularDataNode';
 import ColumnDescriptionNode from './nodes/ColumnDescriptionNode';
 import MetadataFormNode from './nodes/MetadataFormNode';
 import MetadataProfileSearchNode from './nodes/MetadataProfileSearchNode';
-import RDFStoreNode from './nodes/RDFStoreNode';
 import ROCrateNode from './nodes/ROCrateNode';
 import QuantityKindNode from './nodes/QuantityKindNode';
 import UnitNode from './nodes/UnitNode';
@@ -28,7 +27,6 @@ import spreadsheetIcon from './assets/matt-icons_text-x-office-generic-spreadshe
 import tabularSchemaIcon from './assets/tabular_schema.png';
 import metadataFormIcon from './assets/Architetto_--_Formulario.svg';
 import aimsIcon from './assets/aims.png';
-import rdfLogo from './assets/250px-Rdf_logo.svg.png';
 import roCrateLogo from './assets/RO-Crate.png';
 import qudtAvatar from './assets/qudt-avatar.jpg';
 import coscineLogo from './assets/coscine_rgb.svg';
@@ -106,7 +104,6 @@ const nodeTypes = {
   profileSearch: MetadataProfileSearchNodeType,
   quantityKind: QuantityKindNodeType,
   unit: UnitNode,
-  rdfStore: RDFStoreNode,
   roCrate: ROCrateNode,
   coscine: CoscineNodeType,
 };
@@ -124,21 +121,45 @@ const initialNodes = [
     },
   },
   {
-    id: 'tabular',
+    id: 'column-description',
+    type: 'columnDescription',
+    position: { x: 940, y: 80 },
+    data: { label: 'Column Descriptions 1', language: 'en', fields: [] },
+  },
+  {
+    id: 'tabular-preview',
     type: 'previewTabular',
-    position: { x: 280, y: 80 },
+    position: { x: 400, y: 80 },
     data: { label: 'Preview Tabular Data 1', language: 'en' },
+  },
+  {
+    id: 'quantity-kinds',
+    type: 'quantityKind',
+    position: { x: 40, y: 450 },
+    data: { label: 'Quantity Kinds 1', language: 'en' },
+  },
+  {
+    id: 'units',
+    type: 'unit',
+    position: { x: 500, y: 450 },
+    data: { label: 'Units 1', language: 'en' },
+  },
+  {
+    id: 'metadata-form',
+    type: 'metadataForm',
+    position: { x: 960, y: 450 },
+    data: { label: 'Metadata Form 1', language: 'en' },
+  },
+  {
+    id: 'ro-crate',
+    type: 'roCrate',
+    position: { x: 1800, y: 260 },
+    data: { label: 'RO-Crate 1', language: 'en' },
   },
 ];
 
 const tabularPreviewEdgeStyle = { stroke: '#2563eb', strokeWidth: 2 };
 const savedLayoutsStorageKey = 'tabular-rdm.saved-layouts.v1';
-const rdfProducerNodeTypes = new Set([
-  'metadataForm',
-  'columnDescription',
-  'headerSchema',
-]);
-
 /**
  * Highlights connections that carry workflow data between compatible nodes.
  * The styling is visual only; data propagation is handled by deriveNodeData().
@@ -151,10 +172,6 @@ function applySemanticEdgeStyle(edge, nodes) {
       ['previewTabular', 'columnDescription', 'headerSchema'].includes(
         nodeTypesById.get(edge.target),
       )) ||
-    (nodeTypesById.get(edge.source) === 'metadataForm' &&
-      nodeTypesById.get(edge.target) === 'rdfStore') ||
-    (['columnDescription', 'headerSchema'].includes(nodeTypesById.get(edge.source)) &&
-      nodeTypesById.get(edge.target) === 'rdfStore') ||
     (nodeTypesById.get(edge.source) === 'profileSearch' &&
       nodeTypesById.get(edge.target) === 'metadataForm') ||
     (nodeTypesById.get(edge.source) === 'quantityKind' &&
@@ -162,7 +179,6 @@ function applySemanticEdgeStyle(edge, nodes) {
     ([
       'tabularFile',
       'previewTabular',
-      'rdfStore',
       'metadataForm',
       'columnDescription',
       'headerSchema',
@@ -186,74 +202,59 @@ function applySemanticEdgeStyle(edge, nodes) {
   return edge;
 }
 
-function edgeExists(edges, source, target) {
-  return edges.some((edge) => edge.source === source && edge.target === target);
-}
-
-/**
- * Keeps RDF-producing nodes from bypassing the RDF Store on their way to an
- * RO-Crate. A store already connected to the crate is reused; otherwise one is
- * inserted halfway between the producer and crate. Non-RDF inputs, such as a
- * tabular file carrying sheet data, remain connected directly to the crate.
- */
-function routeRdfConnectionThroughStore({ connection, nodes, edges, createStoreNode }) {
-  const sourceNode = nodes.find((node) => node.id === connection.source);
-  const targetNode = nodes.find((node) => node.id === connection.target);
-
-  if (!rdfProducerNodeTypes.has(sourceNode?.type) || targetNode?.type !== 'roCrate') {
-    return {
-      nodes,
-      edges: addEdge(applySemanticEdgeStyle(connection, nodes), edges),
-    };
-  }
-
-  const connectedStore = nodes.find(
-    (node) =>
-      node.type === 'rdfStore' && edgeExists(edges, node.id, targetNode.id),
-  );
-  const storeNode = connectedStore ?? createStoreNode(sourceNode, targetNode);
-  const nextNodes = connectedStore ? nodes : [...nodes, storeNode];
-  const directRdfEdges = edges.filter(
-    (edge) =>
-      edge.target === targetNode.id &&
-      rdfProducerNodeTypes.has(
-        nodes.find((node) => node.id === edge.source)?.type,
-      ),
-  );
-  const producerIds = new Set([
-    sourceNode.id,
-    ...directRdfEdges.map((edge) => edge.source),
-  ]);
-  let nextEdges = edges.filter((edge) => !directRdfEdges.includes(edge));
-
-  for (const producerId of producerIds) {
-    if (!edgeExists(nextEdges, producerId, storeNode.id)) {
-      nextEdges = addEdge(
-        applySemanticEdgeStyle(
-          { source: producerId, target: storeNode.id },
-          nextNodes,
-        ),
-        nextEdges,
-      );
-    }
-  }
-
-  if (!edgeExists(nextEdges, storeNode.id, targetNode.id)) {
-    nextEdges = addEdge(
-      applySemanticEdgeStyle(
-        { source: storeNode.id, target: targetNode.id },
-        nextNodes,
-      ),
-      nextEdges,
-    );
-  }
-
-  return { nodes: nextNodes, edges: nextEdges };
-}
-
 const initialEdges = [
   applySemanticEdgeStyle(
-    { id: 'e1-2', source: 'tabular-source', target: 'tabular', animated: true },
+    {
+      id: 'e1-2',
+      source: 'tabular-source',
+      target: 'column-description',
+      animated: true,
+    },
+    initialNodes,
+  ),
+  applySemanticEdgeStyle(
+    {
+      id: 'e1-3',
+      source: 'tabular-source',
+      target: 'tabular-preview',
+      animated: true,
+    },
+    initialNodes,
+  ),
+  applySemanticEdgeStyle(
+    {
+      id: 'e3-4',
+      source: 'quantity-kinds',
+      target: 'units',
+      animated: true,
+    },
+    initialNodes,
+  ),
+  applySemanticEdgeStyle(
+    {
+      id: 'e1-7',
+      source: 'tabular-source',
+      target: 'ro-crate',
+      animated: true,
+    },
+    initialNodes,
+  ),
+  applySemanticEdgeStyle(
+    {
+      id: 'e2-7',
+      source: 'column-description',
+      target: 'ro-crate',
+      animated: true,
+    },
+    initialNodes,
+  ),
+  applySemanticEdgeStyle(
+    {
+      id: 'e6-7',
+      source: 'metadata-form',
+      target: 'ro-crate',
+      animated: true,
+    },
     initialNodes,
   ),
 ];
@@ -261,12 +262,11 @@ const initialEdges = [
 const nodeTemplates = [
   { type: 'tabularFile', label: 'Tabular file', icon: tabularFileIcon },
   { type: 'previewTabular', label: 'Preview Tabular Data', icon: spreadsheetIcon },
-  { type: 'columnDescription', label: 'Column Description', icon: tabularSchemaIcon },
+  { type: 'columnDescription', label: 'Column Descriptions', icon: tabularSchemaIcon },
   { type: 'quantityKind', label: 'Quantity Kinds', icon: qudtAvatar },
   { type: 'unit', label: 'Units', icon: qudtAvatar },
   { type: 'profileSearch', label: 'Metadata Profile Search', icon: aimsIcon },
   { type: 'metadataForm', label: 'Metadata Form', icon: metadataFormIcon },
-  { type: 'rdfStore', label: 'RDF Store', icon: rdfLogo },
   { type: 'roCrate', label: 'RO-Crate', icon: roCrateLogo },
   { type: 'coscine', label: 'Coscine', icon: coscineLogo },
 ];
@@ -660,51 +660,6 @@ function getConnectedMetadataFormIds(nodes, edges, profileSearchNodeId) {
 }
 
 /**
- * Collects serialized RDF from metadata-producing nodes connected to RDF Store
- * nodes. RDF Store nodes consume the combined Turtle string via data.rdfInput.
- */
-function propagateMetadataRdf(nodes, edges) {
-  const nodeTypesById = new Map(nodes.map((node) => [node.id, node.type]));
-  const nodeDataById = new Map(nodes.map((node) => [node.id, node.data]));
-  const rdfInputsByNodeId = new Map();
-
-  for (const edge of edges) {
-    if (nodeTypesById.get(edge.target) !== 'rdfStore') {
-      continue;
-    }
-
-    if (
-      !['metadataForm', 'columnDescription', 'headerSchema'].includes(
-        nodeTypesById.get(edge.source),
-      )
-    ) {
-      continue;
-    }
-
-    const serializedRdf = nodeDataById.get(edge.source)?.serializedRdf || '';
-
-    if (serializedRdf) {
-      const existingInputs = rdfInputsByNodeId.get(edge.target) ?? [];
-      rdfInputsByNodeId.set(edge.target, [...existingInputs, serializedRdf]);
-    }
-  }
-
-  return nodes.map((node) => {
-    if (node.type !== 'rdfStore') {
-      return node;
-    }
-
-    return {
-      ...node,
-      data: {
-        ...node.data,
-        rdfInput: (rdfInputsByNodeId.get(node.id) ?? []).join('\n\n'),
-      },
-    };
-  });
-}
-
-/**
  * Applies the selected Quantity Kind as a filter for connected Unit nodes.
  */
 function propagateQuantityKindToUnits(nodes, edges) {
@@ -759,12 +714,11 @@ function propagateROCrateInputs(nodes, edges) {
 
     const sourceType = nodeTypesById.get(edge.source);
     const sourceData = nodeDataById.get(edge.source) ?? {};
-    const rdfContent =
-      sourceType === 'rdfStore'
-        ? sourceData.rdfInput
-        : ['metadataForm', 'columnDescription', 'headerSchema'].includes(sourceType)
-          ? sourceData.serializedRdf
-          : '';
+    const rdfContent = ['metadataForm', 'columnDescription', 'headerSchema'].includes(
+      sourceType,
+    )
+      ? sourceData.serializedRdf
+      : '';
 
     if (rdfContent) {
       const existingInputs = rdfInputsByNodeId.get(edge.target) ?? [];
@@ -914,8 +868,7 @@ function propagateCoscineApplicationProfiles(nodes, edges) {
  */
 function deriveNodeData(nodes, edges, tabularMemory) {
   const flowNodes = recalculateFlows(nodes, edges, tabularMemory);
-  const nodesWithMetadata = propagateMetadataRdf(flowNodes, edges);
-  const nodesWithUnits = propagateQuantityKindToUnits(nodesWithMetadata, edges);
+  const nodesWithUnits = propagateQuantityKindToUnits(flowNodes, edges);
   const nodesWithROCrate = propagateROCrateInputs(nodesWithUnits, edges);
   const nodesWithCoscineInputs = propagateCoscineInputs(nodesWithROCrate, edges);
   const nodesWithCoscineProfiles = propagateCoscineApplicationProfiles(
@@ -1258,42 +1211,22 @@ export default function App() {
 
   const onConnect = useCallback(
     (connection) => {
-      const createStoreNode = (sourceNode, targetNode) => {
-        nodeIdCountRef.current += 1;
-        const nextTypeCount = (nodeTypeCountsRef.current.rdfStore ?? 0) + 1;
-        nodeTypeCountsRef.current.rdfStore = nextTypeCount;
-
-        return {
-          id: `node-${nodeIdCountRef.current}`,
-          type: 'rdfStore',
-          position: {
-            x: (sourceNode.position.x + targetNode.position.x) / 2,
-            y: (sourceNode.position.y + targetNode.position.y) / 2,
-          },
-          data: {
-            label: `RDF Store ${nextTypeCount}`,
-            language: globalLanguage,
-          },
-        };
-      };
-      const routedGraph = routeRdfConnectionThroughStore({
-        connection,
-        nodes: nodesRef.current,
-        edges: edgesRef.current,
-        createStoreNode,
-      });
+      const nextEdges = addEdge(
+        applySemanticEdgeStyle(connection, nodesRef.current),
+        edgesRef.current,
+      );
       const nextNodes = deriveNodeData(
-        routedGraph.nodes,
-        routedGraph.edges,
+        nodesRef.current,
+        nextEdges,
         tabularMemoryRef.current,
       );
 
       nodesRef.current = nextNodes;
-      edgesRef.current = routedGraph.edges;
+      edgesRef.current = nextEdges;
       setNodes(nextNodes);
-      setEdges(routedGraph.edges);
+      setEdges(nextEdges);
     },
-    [globalLanguage, setEdges, setNodes],
+    [setEdges, setNodes],
   );
 
   const onEdgesChange = useCallback(

@@ -426,7 +426,7 @@ body {
 }
 
 .tabular-file-node {
-  min-width: 180px;
+  width: 240px;
   padding: 8px;
   border-radius: 12px;
   background: #ffffff;
@@ -491,6 +491,7 @@ body {
   margin: 8px 0 0;
   font-size: 0.75rem;
   color: #475569;
+  overflow-wrap: anywhere;
 }
 
 .preview-tabular-data-node {

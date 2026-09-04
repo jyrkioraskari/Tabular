@@ -169,8 +169,8 @@ document the SmartScreen warning students may see.
 1. Load a spreadsheet with a Tabular File node.
 2. Connect it to downstream tabular nodes and to an RO-Crate node if sheet CSVs
    should be included.
-3. Create RDF by connecting Metadata Form, Column Description, or RDF Store
-   output into the RO-Crate node.
+3. Create RDF by connecting Metadata Form or Column Description output directly
+   into the RO-Crate node, which also provides RDF storage and Turtle preview tools.
 4. Press Download on the RO-Crate node.
 
 If the loaded workbook contains a sheet named `export_config`, the RO-Crate node
