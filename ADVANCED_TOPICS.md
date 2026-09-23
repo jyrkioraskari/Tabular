@@ -1,4 +1,4 @@
-# TabularRDM advanced topics
+# Tabular advanced topics
 
 This guide contains detailed background, less common workflows,
 troubleshooting, and developer information. For a first export, begin with the
@@ -8,7 +8,7 @@ troubleshooting, and developer information. For a first export, begin with the
 
 Tabular data is arranged in rows and columns. CSV and TSV files are plain-text
 tables; Excel and OpenDocument files can contain multiple worksheets as well as
-formatting and formulas. TabularRDM accepts CSV, TSV, TXT, XLS, XLSX, XLSM,
+formatting and formulas. Tabular accepts CSV, TSV, TXT, XLS, XLSX, XLSM,
 XLSB, ODS, and HTML tables. It reads workbook values and does not execute Excel
 macros.
 
@@ -24,13 +24,13 @@ A reusable research table normally has:
   data area.
 
 Keep identifiers such as `00123` as text, use unambiguous dates such as
-`2026-08-25`, and save CSV files as UTF-8 where possible. TabularRDM previews
+`2026-08-25`, and save CSV files as UTF-8 where possible. Tabular previews
 only the first worksheet, but it retains every worksheet for RO-Crate export.
 
 ### Headers and rotated tables
 
 **First row contains headers** is enabled whenever a new file is selected. Turn
-it off for a headerless table; TabularRDM then generates `Column 1`, `Column 2`,
+it off for a headerless table; Tabular then generates `Column 1`, `Column 2`,
 and similar names.
 
 If field names run down the first column, select **Rotate rows into columns**.
@@ -78,14 +78,14 @@ should not be treated as a backup.
 
 ## Metadata, units, and RDF
 
-TabularRDM creates two complementary kinds of metadata:
+Tabular creates two complementary kinds of metadata:
 
 - **Column metadata** explains each variable and its unit.
 - **Dataset metadata** describes the collection as a whole, including its
   title, description, licence, dates, and other profile-specific fields.
 
 Both are serialised as RDF. RDF represents information as linked
-subject–predicate–object statements, often called triples. TabularRDM displays
+subject–predicate–object statements, often called triples. Tabular displays
 the combined triples in the RO-Crate node using the human-readable Turtle
 syntax.
 
@@ -180,7 +180,7 @@ a CSV in the crate.
 Coscine is RWTH Aachen University's research data management platform. It
 organises data in projects and resources, applies metadata application
 profiles, controls access, and supports sharing and preservation workflows.
-TabularRDM can load a resource's profile and upload an RO-Crate to it.
+Tabular can load a resource's profile and upload an RO-Crate to it.
 
 ### Prerequisites
 
@@ -211,7 +211,7 @@ repository.
 9. When the Coscine node reports that the package and metadata are ready,
    select **Upload RO-Crate**.
 
-TabularRDM builds the ZIP, writes metadata for the file, and uploads it to the
+Tabular builds the ZIP, writes metadata for the file, and uploads it to the
 selected resource. The status shows the uploaded filename when the operation
 succeeds. Nothing is uploaded until **Upload RO-Crate** is selected.
 
@@ -229,7 +229,7 @@ integration require internet access. Data is sent to Coscine only when you
 explicitly start an upload.
 
 On Windows, obtain the portable executable from the official
-[TabularRDM releases page](https://github.com/jyrkioraskari/TabularRDM/releases).
+[Tabular releases page](https://github.com/jyrkioraskari/TabularRDM/releases).
 If Microsoft SmartScreen appears, compare the published SHA-256 checksum before
 continuing. Contact course staff or IT support if no checksum is available or
 the values differ.
@@ -252,7 +252,7 @@ Common problems:
 - **The Windows application is blocked:** verify the checksum, try the portable
   application from a writable folder, or ask IT support.
 
-When requesting support, include the TabularRDM version, operating system, file
+When requesting support, include the Tabular version, operating system, file
 type, the step that failed, and a screenshot without confidential data or API
 tokens.
 

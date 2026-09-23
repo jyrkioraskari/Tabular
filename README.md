@@ -1,17 +1,17 @@
-# TabularRDM
+# Tabular
 
-TabularRDM helps you turn tabular research data into a standard, shareable
+Tabular helps you turn tabular research data into a standard, shareable
 research dataset. Load a CSV or spreadsheet and add metadata that makes your
 data easier to find, understand, and reuse.
 
-![The TabularRDM workflow canvas](screen.png)
+![The Tabular workflow canvas](screen.png)
 
 ## Start the application
 
 ### Windows
 
 Download `TabularRDM-1.0.0-x64-Portable.exe` from the official
-[TabularRDM releases page](https://github.com/jyrkioraskari/TabularRDM/releases)
+[Tabular releases page](https://github.com/jyrkioraskari/TabularRDM/releases)
 and double-click it. The portable application needs no installation and
 normally needs no administrator rights.
 
@@ -97,7 +97,7 @@ Metadata Form ──────────────────────
 
 Coscine is RWTH Aachen University's platform for managing, describing, sharing,
 and preserving research data. If you already have a Coscine project, writable
-resource, and API token, TabularRDM can upload the RO-Crate directly.
+resource, and API token, Tabular can upload the RO-Crate directly.
 
 Add **Coscine** and a new **Metadata Form** to the canvas, then connect:
 
@@ -109,7 +109,7 @@ Enter the token, select **Load resources**, choose the destination resource,
 complete and save its metadata form, and select **Upload RO-Crate**. Nothing is
 uploaded until you select that button.
 
-![A TabularRDM workflow connected to Coscine](screen2.png)
+![A Tabular workflow connected to Coscine](screen2.png)
 
 ## Want to go further?
 
