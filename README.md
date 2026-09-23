@@ -10,9 +10,10 @@ data easier to find, understand, and reuse.
 
 ### Windows
 
-Download `TabularRDM-1.0.0-x64-Portable.exe` from the location supplied by your
-course or institution and double-click it. The portable application needs no
-installation and normally needs no administrator rights.
+Download `TabularRDM-1.0.0-x64-Portable.exe` from the official
+[TabularRDM releases page](https://github.com/jyrkioraskari/TabularRDM/releases)
+and double-click it. The portable application needs no installation and
+normally needs no administrator rights.
 
 ### Linux, macOS, or source installation
 

@@ -228,10 +228,11 @@ QUDT, AIMS, or Coscine. QUDT unit lookup, AIMS profile search, and Coscine
 integration require internet access. Data is sent to Coscine only when you
 explicitly start an upload.
 
-On Windows, obtain the portable executable from the location supplied by your
-course or institution. If Microsoft SmartScreen appears, compare the published
-SHA-256 checksum before continuing. Contact course staff or IT support if no
-checksum is available or the values differ.
+On Windows, obtain the portable executable from the official
+[TabularRDM releases page](https://github.com/jyrkioraskari/TabularRDM/releases).
+If Microsoft SmartScreen appears, compare the published SHA-256 checksum before
+continuing. Contact course staff or IT support if no checksum is available or
+the values differ.
 
 Common problems:
 
