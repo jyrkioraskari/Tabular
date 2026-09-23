@@ -1,13 +1,8 @@
 # TabularRDM
 
-TabularRDM helps you turn a CSV or spreadsheet into a documented research
-dataset. Load your table, explain its columns, add metadata, and download a
-portable RO-Crate ZIP—all on a visual canvas.
-
-Research data management means keeping data organised, understandable, safe,
-and reusable throughout a research project. TabularRDM makes a useful first
-step easy: it keeps your tabular data together with information about what the
-dataset and its columns mean.
+TabularRDM helps you turn tabular research data into a standard, shareable
+research dataset. Load a CSV or spreadsheet and add metadata that makes your
+data easier to find, understand, and reuse.
 
 ![The TabularRDM workflow canvas](screen.png)
 
