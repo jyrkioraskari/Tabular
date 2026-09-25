@@ -1,7 +1,7 @@
 /**
  * Node for editing metadata about each detected spreadsheet column.
- * Descriptions are typed directly, units are assigned by dropping values from
- * UnitNode, and every change is sent upward for automatic RDF serialization.
+ * Descriptions can be typed or assigned from TerminologyNode, units are
+ * assigned from UnitNode, and every change is sent upward for RDF serialization.
  */
 import { useCallback } from 'react';
 import tabularSchemaIcon from '../assets/tabular_schema.png';
@@ -9,15 +9,18 @@ import NodeHandle from './NodeHandle';
 import NodeInfoButton from './NodeInfoButton';
 
 const UNIT_DRAG_MIME_TYPE = 'application/tabulatrdm-unit';
+const TERM_DRAG_MIME_TYPE = 'application/tabulatrdm-term';
 
 export default function ColumnDescriptionNode({ id, data, selected, onFieldsChange }) {
   const fields = Array.isArray(data.fields) ? data.fields : [];
   const hasFields = fields.length > 0;
 
   const handleDescriptionChange = useCallback(
-    (index, description) => {
+    (index, description, descriptionUri = '', descriptionLanguage = '') => {
       const nextFields = fields.map((field, fieldIndex) =>
-        fieldIndex === index ? { ...field, description } : field,
+        fieldIndex === index
+          ? { ...field, description, descriptionUri, descriptionLanguage }
+          : field,
       );
       onFieldsChange(id, nextFields);
     },
@@ -25,28 +28,52 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
   );
 
   const handleUnitChange = useCallback(
-    (index, unit, unitUri = '') => {
+    (index, unit, unitUri = '', unitLanguage = '') => {
       const nextFields = fields.map((field, fieldIndex) =>
-        fieldIndex === index ? { ...field, unit, unitUri } : field,
+        fieldIndex === index ? { ...field, unit, unitUri, unitLanguage } : field,
       );
       onFieldsChange(id, nextFields);
     },
     [fields, id, onFieldsChange],
   );
 
-  const handleUnitDragOver = useCallback((event) => {
+  const handleDropTargetDragOver = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
     event.dataTransfer.dropEffect = 'copy';
   }, []);
 
+  const handleDescriptionDrop = useCallback(
+    (event, index) => {
+      const rawTerm = event.dataTransfer.getData(TERM_DRAG_MIME_TYPE);
+
+      if (!rawTerm) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      try {
+        const term = JSON.parse(rawTerm);
+        handleDescriptionChange(
+          index,
+          term.label || term.iri || '',
+          term.iri || '',
+          term.language || '',
+        );
+      } catch {
+        // Ignore malformed internal drag payloads.
+      }
+    },
+    [handleDescriptionChange],
+  );
+
   const handleUnitDrop = useCallback(
     (event, index) => {
-      // Unit nodes provide structured JSON; the text fallback keeps drops from
-      // plain external sources harmless.
-      const rawUnit =
-        event.dataTransfer.getData(UNIT_DRAG_MIME_TYPE) ||
-        event.dataTransfer.getData('text/plain');
+      // Only accept the structured payload emitted by Unit nodes so a dragged
+      // terminology concept cannot accidentally be assigned as a unit.
+      const rawUnit = event.dataTransfer.getData(UNIT_DRAG_MIME_TYPE);
 
       if (!rawUnit) {
         return;
@@ -57,9 +84,14 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
 
       try {
         const unit = JSON.parse(rawUnit);
-        handleUnitChange(index, unit.label || unit.uri || '', unit.uri || '');
+        handleUnitChange(
+          index,
+          unit.label || unit.uri || '',
+          unit.uri || '',
+          unit.language || '',
+        );
       } catch {
-        handleUnitChange(index, rawUnit);
+        // Ignore malformed internal drag payloads.
       }
     },
     [handleUnitChange],
@@ -87,18 +119,27 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
               {fields.map((field, index) => (
                 <tr key={`${field.header || 'header'}-${index}`}>
                   <td>{field.header || `Column ${index + 1}`}</td>
-                  <td>
+                  <td
+                    className="column-description-node__description-cell"
+                    onDragOver={handleDropTargetDragOver}
+                    onDrop={(event) => handleDescriptionDrop(event, index)}
+                  >
                     <input
                       type="text"
-                      className="column-description-node__input"
+                      className={`column-description-node__input${
+                        field.descriptionUri ? ' column-description-node__linked-input' : ''
+                      }`}
                       value={field.description ?? ''}
                       onChange={(event) => handleDescriptionChange(index, event.target.value)}
-                      placeholder="Add column description"
+                      onDragOver={handleDropTargetDragOver}
+                      onDrop={(event) => handleDescriptionDrop(event, index)}
+                      title={field.descriptionUri || undefined}
+                      placeholder="Type or drag a terminology concept"
                     />
                   </td>
                   <td
                     className="column-description-node__unit-cell"
-                    onDragOver={handleUnitDragOver}
+                    onDragOver={handleDropTargetDragOver}
                     onDrop={(event) => handleUnitDrop(event, index)}
                   >
                     <input
@@ -106,8 +147,9 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
                       className="column-description-node__input column-description-node__unit-input"
                       value={field.unit ?? ''}
                       readOnly
-                      onDragOver={handleUnitDragOver}
+                      onDragOver={handleDropTargetDragOver}
                       onDrop={(event) => handleUnitDrop(event, index)}
+                      title={field.unitUri || undefined}
                       placeholder="Drag a unit from Units"
                     />
                   </td>

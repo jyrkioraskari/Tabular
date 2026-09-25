@@ -426,7 +426,7 @@ body {
 }
 
 .tabular-file-node {
-  min-width: 180px;
+  width: 240px;
   padding: 8px;
   border-radius: 12px;
   background: #ffffff;
@@ -473,10 +473,25 @@ body {
   display: none;
 }
 
+.tabular-file-node__header-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #334155;
+  cursor: pointer;
+}
+
+.tabular-file-node__header-option input {
+  margin: 0;
+}
+
 .tabular-file-node__meta {
   margin: 8px 0 0;
   font-size: 0.75rem;
   color: #475569;
+  overflow-wrap: anywhere;
 }
 
 .preview-tabular-data-node {
@@ -619,12 +634,19 @@ body {
   border-style: dashed;
 }
 
+.column-description-node__description-cell,
 .column-description-node__unit-cell {
   background: rgba(239, 246, 255, 0.45);
 }
 
+.column-description-node__description-cell:hover .column-description-node__input,
 .column-description-node__unit-cell:hover .column-description-node__unit-input {
   border-color: rgba(37, 99, 235, 0.75);
+}
+
+.column-description-node__linked-input {
+  border-style: dashed;
+  background: #eff6ff;
 }
 
 .column-description-node__empty {
@@ -854,6 +876,191 @@ body {
 .profile-search-node__result-button:disabled {
   cursor: wait;
   opacity: 0.7;
+}
+
+.terminology-node {
+  width: 420px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.terminology-node.selected {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+}
+
+.terminology-node__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.terminology-node__icon {
+  width: 62px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.terminology-node__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.terminology-node__form {
+  display: grid;
+  gap: 6px;
+}
+
+.terminology-node__label {
+  font-size: 0.78rem;
+  color: #475569;
+}
+
+.terminology-node__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.terminology-node__input {
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  border-radius: 6px;
+  padding: 7px 8px;
+  font: inherit;
+}
+
+.terminology-node__button {
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  border-radius: 8px;
+  padding: 7px 10px;
+  background: #f8fafc;
+  font: inherit;
+  cursor: pointer;
+}
+
+.terminology-node__button:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.terminology-node__button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.terminology-node__status,
+.terminology-node__error {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.terminology-node__error {
+  color: #b91c1c;
+}
+
+.terminology-node__results {
+  max-height: 320px;
+  overflow: auto;
+  margin: 10px 0 0;
+  padding: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 0.8rem;
+}
+
+.terminology-node__results ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.terminology-node__results li {
+  position: relative;
+  margin: 0 0 8px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.terminology-node__results li:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.terminology-node__results p {
+  margin: 0;
+  color: #64748b;
+}
+
+.terminology-node__result-button {
+  display: grid;
+  width: 100%;
+  gap: 4px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 6px;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  text-align: left;
+  cursor: grab;
+}
+
+.terminology-node__result-button:hover,
+.terminology-node__result-button.selected {
+  border-color: rgba(59, 130, 246, 0.35);
+  background: #ffffff;
+}
+
+.terminology-node__result-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.terminology-node__ontology {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 1px 6px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.68rem;
+}
+
+.terminology-node__definition {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #475569;
+  font-weight: 400;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.terminology-node__iri {
+  overflow: hidden;
+  color: #64748b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminology-node__link {
+  display: inline-block;
+  margin: 4px 6px 0;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.terminology-node__link:hover {
+  text-decoration: underline;
 }
 
 .quantity-kind-node,

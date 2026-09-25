@@ -2,14 +2,23 @@
   "name": "TabulatRDM",
   "version": "1.0.0",
   "description": "Simple React Flow app",
+  "author": "Jyrki Oraskari",
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "serve": "node server.js"
+    "serve": "node server.js",
+    "desktop": "npm run build && electron .",
+    "dist:windows": "npm run build && electron-builder --win nsis portable"
   },
   "private": true,
+  "allowScripts": {
+    "esbuild": true,
+    "electron": true,
+    "sqlite3": false
+  },
   "dependencies": {
     "@ro-kit/ui-widgets": "^1.0.43",
     "@ulb-darmstadt/shacl-form": "^3.0.4",
@@ -31,6 +40,41 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
+    "electron": "^37.2.6",
+    "electron-builder": "^26.0.12",
     "vite": "^5.4.8"
+  },
+  "build": {
+    "appId": "de.rwth.tabularrdm",
+    "productName": "TabularRDM",
+    "asar": true,
+    "npmRebuild": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "server.js",
+      "package.json",
+      "!node_modules/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "artifactName": "${productName}-${version}-${arch}-Setup.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-${arch}-Portable.${ext}"
+    }
   }
 }

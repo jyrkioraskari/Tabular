@@ -3,9 +3,22 @@
  * It discovers the current application-profile endpoint from Swagger, searches
  * profiles, and returns SHACL/Turtle definitions for selected profiles.
  */
-const AIMS_SWAGGER_URL = 'https://pg4aims.ulb.tu-darmstadt.de/swagger/v1/swagger.json';
+const AIMS_SWAGGER_URL = 'https://aims-backend.tools.coscine.dev/swagger/v1/swagger.json';
+const AIMS_API_ORIGIN = new URL(AIMS_SWAGGER_URL).origin;
+const AIMS_PROXY_PATH = '/aims-api';
 const APPLICATION_PROFILES_PATH = '/AIMS/application-profiles';
+const APPLICATION_PROFILE_PATH = `${APPLICATION_PROFILES_PATH}/{uri}`;
 export const DEFAULT_PROFILE_QUERY = 'RO-kit';
+
+function getAimsFetchUrl(url) {
+  const targetUrl = new URL(url, AIMS_API_ORIGIN);
+
+  if (targetUrl.origin !== AIMS_API_ORIGIN) {
+    throw new Error(`AIMS Swagger references an unsupported server: ${targetUrl.origin}`);
+  }
+
+  return `${AIMS_PROXY_PATH}${targetUrl.pathname}${targetUrl.search}`;
+}
 
 function getSwaggerOperation(specification) {
   return specification?.paths?.[APPLICATION_PROFILES_PATH]?.get;
@@ -29,6 +42,30 @@ function getApplicationProfilesUrl(specification) {
   const baseUrl = serverUrl ? new URL(serverUrl, swaggerUrl) : swaggerUrl;
 
   return new URL(APPLICATION_PROFILES_PATH, baseUrl.origin);
+}
+
+function getApplicationProfileUrl(specification, baseUri) {
+  const swaggerUrl = new URL(AIMS_SWAGGER_URL);
+  const operation = specification?.paths?.[APPLICATION_PROFILE_PATH]?.get;
+
+  if (!operation || !operation.parameters?.some(
+    (parameter) => parameter.in === 'path' && parameter.name === 'uri',
+  )) {
+    throw new Error('AIMS Swagger does not define the expected single-profile endpoint.');
+  }
+
+  const serverUrl = specification?.servers?.[0]?.url;
+  const baseUrl = serverUrl ? new URL(serverUrl, swaggerUrl) : swaggerUrl;
+  const profileUrl = new URL(
+    `${APPLICATION_PROFILES_PATH}/${encodeURIComponent(baseUri)}`,
+    baseUrl.origin,
+  );
+
+  if (getOperationParameter(operation, 'includeDefinition')) {
+    profileUrl.searchParams.set('includeDefinition', 'true');
+  }
+
+  return profileUrl;
 }
 
 function normalizeProfiles(payload) {
@@ -79,7 +116,7 @@ export async function fetchAimsApplicationProfiles({
   includeDefinition = false,
   signal,
 }) {
-  const swaggerResponse = await fetch(AIMS_SWAGGER_URL, {
+  const swaggerResponse = await fetch(getAimsFetchUrl(AIMS_SWAGGER_URL), {
     headers: {
       Accept: 'application/json',
     },
@@ -100,7 +137,7 @@ export async function fetchAimsApplicationProfiles({
     profilesUrl.searchParams.set('includeDefinition', 'true');
   }
 
-  const profilesResponse = await fetch(profilesUrl, {
+  const profilesResponse = await fetch(getAimsFetchUrl(profilesUrl), {
     headers: {
       Accept: 'application/json',
     },
@@ -132,8 +169,8 @@ export function buildCombinedProfileDefinitions(profiles) {
 
 /**
  * Returns SHACL/Turtle shapes for one selected profile. If the search result
- * already contains a definition it is reused; otherwise the profile is fetched
- * again by base URI with includeDefinition enabled.
+ * already contains a definition it is reused; otherwise the exact profile is
+ * fetched from the single-profile endpoint with includeDefinition enabled.
  */
 export async function fetchAimsApplicationProfileDefinition({ profile, signal }) {
   const baseUri = getProfileBaseUri(profile).trim();
@@ -152,21 +189,38 @@ export async function fetchAimsApplicationProfileDefinition({ profile, signal })
     };
   }
 
-  const profiles = await fetchAimsApplicationProfiles({
-    query: baseUri,
-    includeDefinition: true,
+  const swaggerResponse = await fetch(getAimsFetchUrl(AIMS_SWAGGER_URL), {
+    headers: {
+      Accept: 'application/json',
+    },
     signal,
   });
-  const matchedProfileWithDefinition = profiles.find(
-    (candidateProfile) =>
-      getProfileBaseUri(candidateProfile).trim() === baseUri &&
-      getProfileDefinition(candidateProfile),
-  );
-  const profileWithDefinition =
-    matchedProfileWithDefinition ?? profiles.find(getProfileDefinition);
-  const shapes = profileWithDefinition
-    ? buildSingleProfileDefinition(profileWithDefinition)
-    : '';
+
+  if (!swaggerResponse.ok) {
+    throw new Error(`Unable to load AIMS Swagger specification (${swaggerResponse.status}).`);
+  }
+
+  const specification = await swaggerResponse.json();
+  const profileUrl = getApplicationProfileUrl(specification, baseUri);
+  const profileResponse = await fetch(getAimsFetchUrl(profileUrl), {
+    headers: {
+      Accept: 'application/json',
+    },
+    signal,
+  });
+
+  if (!profileResponse.ok) {
+    throw new Error(`Unable to load AIMS application profile (${profileResponse.status}).`);
+  }
+
+  const profileWithDefinition = await profileResponse.json();
+  const returnedBaseUri = getProfileBaseUri(profileWithDefinition).trim();
+
+  if (returnedBaseUri !== baseUri) {
+    throw new Error(`AIMS returned a different profile for ${baseUri}.`);
+  }
+
+  const shapes = buildSingleProfileDefinition(profileWithDefinition);
 
   if (!shapes) {
     throw new Error(`AIMS returned no Turtle definition for ${baseUri}.`);

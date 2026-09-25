@@ -1,159 +1,130 @@
-# TabularRDM
+# Tabular
 
-TabularRDM is a React Flow application for building a small tabular research
-data workflow. Users can load spreadsheet data, preview columns, describe those
-columns, create RDF metadata, inspect RDF in a store, and export an RO-Crate ZIP.
+Tabular helps you turn tabular research data into a standard, shareable
+research dataset. Load a CSV or spreadsheet and add metadata that makes your
+data easier to find, understand, and reuse.
 
-![TabulatRDM screen](screen.png)
+![The Tabular workflow canvas](screen.png)
 
-## Running the App
+## Start the application
 
-Install dependencies:
+### Windows
+
+Download `TabularRDM-1.0.0-x64-Portable.exe` from the official
+[Tabular releases page](https://github.com/jyrkioraskari/TabularRDM/releases)
+and double-click it. The portable application needs no installation and
+normally needs no administrator rights.
+
+### Linux, macOS, or source installation
+
+Install Node.js 18 or newer, open a terminal in this repository, and run:
 
 ```sh
 npm install
-```
-
-Start the Vite development server:
-
-```sh
 npm run dev
 ```
 
-Build the production bundle:
+Open <http://localhost:5173/> in your browser.
 
-```sh
-npm run build
-```
+## Your first RO-Crate in a few minutes
 
-Serve the built app with the local Node server:
+The starting canvas already contains the nodes and connections needed for a
+basic export. A node receives data on its left handle and sends data from its
+right handle. If you accidentally remove a connection, restore it by dragging
+from the right handle of the first node to the left handle of the second.
 
-```sh
-npm run serve
-```
+### 1. Choose a table
 
-The production server serves files from `dist/` and proxies `/qudt` requests to
-`https://qudt.org` so QUDT vocabulary data can be fetched without browser CORS
-issues.
+In **Tabular file**, select **Select tabular file** and choose a CSV or Excel
+file. A good source has one header row, one variable per column, and one record
+per row.
 
-## Main Files
+The **Preview Tabular Data** node immediately shows the headers and first five
+rows. Scroll inside it to see more columns. If the first row contains data
+rather than headers, clear **First row contains headers**.
 
-`package.json`
-: Defines the Vite scripts and runtime dependencies. Important libraries include
-  React, React Flow, xlsx, rdfstore, ro-crate, and jszip.
+### 2. Explain the columns
 
-`server.js`
-: Minimal static file server for the production build. It also provides the
-  `/qudt` proxy used by the QUDT service.
+The headers appear automatically in **Column Descriptions**. Add a short,
+specific description beside each one. For example:
 
-`vite.config.js`
-: Vite configuration for the React app.
+- `machine_id`: “Unique identifier of the drilling machine”
+- `elapsed_time_s`: “Seconds elapsed since the measurement started”
+- `air_temperature`: “Ambient air temperature at the sensor”
 
-`index.html`
-: Vite HTML entry point.
+Descriptions are saved as machine-readable RDF automatically.
 
-`src/main.jsx`
-: Mounts the React application.
+### 3. Add units where helpful
 
-`src/App.jsx`
-: Main workflow canvas. It defines node templates, connection behavior, data
-  propagation between nodes, spreadsheet parsing, RDF propagation, and RO-Crate
-  input propagation.
+In **Quantity Kinds**, search for a type of measurement such as `temperature`
+and select **Celsius temperature**. The connected **Units** node will show
+matching units. Drag **Degree Celsius** into the Unit field beside the relevant
+column description.
 
-`src/styles.css`
-: Application-wide styles for the canvas, sidebar, and custom node UI.
+Leave the unit empty for identifiers, categories, and values that genuinely
+have no unit.
 
-## Node Files
+### 4. Describe the dataset
 
-`src/nodes/TabularFileNode.jsx`
-: File input node. Reads a selected CSV or spreadsheet file as an ArrayBuffer and
-  passes it to `App.jsx`.
+Complete the required fields in **Metadata Form**, such as the dataset name,
+description, licence, and issue date. Select **Save** and check that the node
+reports **Metadata saved**.
 
-`src/nodes/PreviewTabularDataNode.jsx`
-: Displays a preview table for the connected tabular file.
+This information describes the dataset as a whole; the earlier column
+descriptions explain the individual variables.
 
-`src/nodes/ColumnDescriptionNode.jsx`
-: Lets users enter descriptions for detected columns. Units are assigned only by
-  dragging a unit from the Units node. Changes are serialized to RDF
-  automatically; there is no manual save button.
+### 5. Download the result
 
-`src/nodes/QuantityKindNode.jsx`
-: Lets users search and select QUDT quantity kinds.
+The connected **RO-Crate** node collects the table, column descriptions, and
+dataset metadata. Check that it reports RDF triples, then select
+**Download RO-Crate**.
 
-`src/nodes/UnitNode.jsx`
-: Lets users search QUDT units, filtered by a selected quantity kind when
-  connected. Unit selections can be dragged into Column Description unit fields.
+The downloaded ZIP is an RO-Crate: a standard package containing your data and
+a machine-readable catalogue of its contents. Keep the ZIP intact when sharing
+or archiving it. You can also select **Download Turtle** if you want the RDF
+metadata as a separate `metadata.ttl` file.
 
-`src/nodes/MetadataProfileSearchNode.jsx`
-: Searches AIMS metadata profiles and passes selected profile information to a
-  connected Metadata Form node.
-
-`src/nodes/MetadataFormNode.jsx`
-: Wraps the SHACL form web component. It loads default metadata shapes or shapes
-  from a selected AIMS profile and emits serialized RDF when the form is saved.
-
-`src/nodes/RDFStoreNode.jsx`
-: Loads connected Turtle RDF into rdfstore-js, shows triple counts, previews the
-  loaded Turtle, and allows downloading `metadata.ttl`.
-
-`src/nodes/ROCrateNode.jsx`
-: Creates an RO-Crate ZIP using ro-crate and jszip. It includes `data.json` from
-  connected RDF content, CSV exports for connected spreadsheet sheets under
-  `original_data/`, and `ro-crate-metadata.json`.
-
-## Service Files
-
-`src/services/aimsApi.js`
-: Fetches and normalizes AIMS application profile data.
-
-`src/services/columnDescriptionRdf.js`
-: Serializes column description fields into Turtle RDF.
-
-`src/services/metadataShapesService.js`
-: Loads metadata shape definitions, using a worker when available.
-
-`src/services/metadataShapes.worker.js`
-: Worker implementation for metadata shape processing.
-
-`src/services/qudtService.js`
-: Fetches and normalizes QUDT quantity kind and unit data.
-
-## RO-Crate Export Flow
-
-1. Load a spreadsheet with a Tabular File node.
-2. Connect it to downstream tabular nodes and to an RO-Crate node if sheet CSVs
-   should be included.
-3. Create RDF by connecting Metadata Form, Column Description, or RDF Store
-   output into the RO-Crate node.
-4. Press Download on the RO-Crate node.
-
-If the loaded workbook contains a sheet named `export_config`, the RO-Crate node
-reads rows from that sheet to derive:
+That is the complete basic workflow:
 
 ```text
-dataset_id
-dataset_name
-dataset_title
-dataset_label
-title
-dataset_description
-description
-license
+Tabular file ──┬──> Preview Tabular Data
+               ├──> Column Descriptions ──┐
+               └───────────────────────────┼──> RO-Crate ZIP
+Metadata Form ─────────────────────────────┘
 ```
 
-The exported ZIP name is based on `dataset_id`, `dataset_name`, or `dataset`.
-The crate title falls back through `dataset_title`, `dataset_label`, `title`, and
-the derived dataset id.
+## Send the result to RWTH Coscine
 
-## RWTH Coscine Integration
+Coscine is RWTH Aachen University's platform for managing, describing, sharing,
+and preserving research data. If you already have a Coscine project, writable
+resource, and API token, Tabular can upload the RO-Crate directly.
 
-![TabulatRDM screen](screen2.png)
+Add **Coscine** and a new **Metadata Form** to the canvas, then connect:
 
-## Notes
+```text
+Coscine ──> Metadata Form ──> RO-Crate ──> Coscine
+```
 
-`npm run build` may show a Vite warning about chunks larger than 500 kB. This is
-expected because libraries such as rdfstore, xlsx, ro-crate, and jszip are large.
-The warning is not a build failure.
+Enter the token, select **Load resources**, choose the destination resource,
+complete and save its metadata form, and select **Upload RO-Crate**. Nothing is
+uploaded until you select that button.
+
+![A Tabular workflow connected to Coscine](screen2.png)
+
+## Want to go further?
+
+See [Advanced topics](ADVANCED_TOPICS.md) for:
+
+- [preparing difficult CSV and spreadsheet files](ADVANCED_TOPICS.md#preparing-tabular-data);
+- [all interface controls and saved layouts](ADVANCED_TOPICS.md#interface-reference);
+- [metadata profiles, QUDT units, and RDF](ADVANCED_TOPICS.md#metadata-units-and-rdf);
+- [RO-Crate contents and custom export settings](ADVANCED_TOPICS.md#ro-crate-details-and-export-settings);
+- [the complete Coscine workflow](ADVANCED_TOPICS.md#rwth-coscine-in-detail);
+- [privacy, security, and troubleshooting](ADVANCED_TOPICS.md#privacy-security-and-troubleshooting); and
+- [developer, build, and release instructions](ADVANCED_TOPICS.md#developer-notes).
+
+Each node also has an `i` button with short instructions for that part of the
+workflow.
 
 <p align="right">
   <img src="src/assets/nfdi4ing_24.svg" alt="NFDI4Ing" width="220">

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const coscineApiOrigin = 'https://coscine.rwth-aachen.de';
+const aimsApiOrigin = 'https://aims-backend.tools.coscine.dev';
 
 async function readRequestBody(request) {
   const chunks = [];
@@ -87,7 +88,21 @@ export default defineConfig({
     },
   ],
   server: {
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+    hmr: {
+      protocol: 'ws',
+      host: '127.0.0.1',
+      port: 5173,
+      clientPort: 5173,
+    },
     proxy: {
+      '/aims-api': {
+        target: aimsApiOrigin,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/aims-api/, ''),
+      },
       '/qudt': {
         target: 'https://qudt.org',
         changeOrigin: true,

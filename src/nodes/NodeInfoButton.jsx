@@ -41,18 +41,20 @@ const instructions = {
       title: 'Column description',
       steps: [
         'Connect a Tabular file node to populate the table headers.',
-        'Write a short description for each column.',
+        'Write a short description or drag a Terminology Service concept into the description field.',
         'Drag units from a Units node into the Unit column when a measured value needs a unit.',
-        'The node serializes the descriptions as RDF for RDF Store and RO-Crate nodes.',
+        'Hover over a linked concept or unit name to see its persistent URI.',
+        'The node serializes the descriptions as RDF for connected RO-Crate nodes.',
       ],
     },
     de: {
       title: 'Spaltenbeschreibung',
       steps: [
         'Verbinde einen Tabellendatei-Knoten, um die Kopfzeilen zu laden.',
-        'Ergaenze fur jede Spalte eine kurze Beschreibung.',
+        'Erganze eine kurze Beschreibung oder ziehe einen Begriff des Terminologiedienstes in das Beschreibungsfeld.',
         'Ziehe Einheiten aus einem Einheiten-Knoten in die Einheitenspalte, wenn Messwerte eine Einheit brauchen.',
-        'Der Knoten serialisiert die Beschreibungen als RDF fur RDF Store und RO-Crate.',
+        'Bewege den Mauszeiger uber einen verknupften Begriff oder Einheitennamen, um dessen persistente URI zu sehen.',
+        'Der Knoten serialisiert die Beschreibungen als RDF fur verbundene RO-Crate-Knoten.',
       ],
     },
   },
@@ -90,6 +92,24 @@ const instructions = {
       ],
     },
   },
+  terminology: {
+    en: {
+      title: 'Terminology Service',
+      steps: [
+        'Enter a word or phrase to search terminology concepts through the official NFDI4Ing OLS4 API.',
+        'Review each result’s label, definition, ontology, and persistent identifier.',
+        'Open a concept in a new tab or drag it into a Column Description field; its label is shown while its persistent IRI is retained.',
+      ],
+    },
+    de: {
+      title: 'Terminologiedienst',
+      steps: [
+        'Gib ein Wort oder eine Wortgruppe ein, um Begriffe uber die offizielle NFDI4Ing-OLS4-API zu suchen.',
+        'Prufe Bezeichnung, Definition, Ontologie und persistenten Identifikator der Ergebnisse.',
+        'Offne einen Begriff in einem neuen Tab oder ziehe ihn in ein Spaltenbeschreibungsfeld; die Bezeichnung wird angezeigt und die persistente IRI bleibt erhalten.',
+      ],
+    },
+  },
   profileSearch: {
     en: {
       title: 'Metadata profile search',
@@ -114,7 +134,7 @@ const instructions = {
       steps: [
         'Use the loaded SHACL form to enter dataset metadata.',
         'Forms can come from Metadata Profile Search or from a connected Coscine node.',
-        'Save the form to emit RDF for RDF Store and RO-Crate nodes.',
+        'Save the form to emit RDF for connected RO-Crate nodes.',
       ],
     },
     de: {
@@ -122,7 +142,7 @@ const instructions = {
       steps: [
         'Trage Datensatz-Metadaten in das geladene SHACL-Formular ein.',
         'Formulare konnen aus der Metadatenprofil-Suche oder aus einem verbundenen Coscine-Knoten kommen.',
-        'Speichere das Formular, um RDF fur RDF Store und RO-Crate auszugeben.',
+        'Speichere das Formular, um RDF fur verbundene RO-Crate-Knoten auszugeben.',
       ],
     },
   },
@@ -148,14 +168,16 @@ const instructions = {
     en: {
       title: 'RO-Crate',
       steps: [
-        'Connect RDF and tabular workflow nodes to package their outputs.',
+        'Connect RDF-producing and tabular nodes directly to collect their outputs.',
+        'Review the RDF triples, preview the Turtle, or download metadata.ttl.',
         'Download the RO-Crate ZIP locally or connect this node to Coscine for upload.',
       ],
     },
     de: {
       title: 'RO-Crate',
       steps: [
-        'Verbinde RDF- und Tabellendaten-Knoten, um deren Ausgaben zu paketieren.',
+        'Verbinde RDF-erzeugende und Tabellendaten-Knoten direkt, um deren Ausgaben zu sammeln.',
+        'Prufe die RDF-Tripel und die Turtle-Vorschau oder lade metadata.ttl herunter.',
         'Lade das RO-Crate-ZIP lokal herunter oder verbinde diesen Knoten mit Coscine fur den Upload.',
       ],
     },
