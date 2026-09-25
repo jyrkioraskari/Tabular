@@ -16,7 +16,6 @@ import PreviewTabularDataNode from './nodes/PreviewTabularDataNode';
 import ColumnDescriptionNode from './nodes/ColumnDescriptionNode';
 import MetadataFormNode from './nodes/MetadataFormNode';
 import MetadataProfileSearchNode from './nodes/MetadataProfileSearchNode';
-import RDFStoreNode from './nodes/RDFStoreNode';
 import ROCrateNode from './nodes/ROCrateNode';
 import QuantityKindNode from './nodes/QuantityKindNode';
 import UnitNode from './nodes/UnitNode';
@@ -28,7 +27,6 @@ import spreadsheetIcon from './assets/matt-icons_text-x-office-generic-spreadshe
 import tabularSchemaIcon from './assets/tabular_schema.png';
 import metadataFormIcon from './assets/Architetto_--_Formulario.svg';
 import aimsIcon from './assets/aims.png';
-import rdfLogo from './assets/250px-Rdf_logo.svg.png';
 import roCrateLogo from './assets/RO-Crate.png';
 import qudtAvatar from './assets/qudt-avatar.jpg';
 import coscineLogo from './assets/coscine_rgb.svg';
@@ -37,6 +35,8 @@ import nfdi4ingLogo from './assets/nfdi4ing_24.svg';
 
 const nodeHandlers = {
   onTabularLoaded: undefined,
+  onTabularHasHeaderChange: undefined,
+  onTabularTransposeChange: undefined,
   onColumnDescriptionFieldsChange: undefined,
   onMetadataRdfChange: undefined,
   onProfileSelect: undefined,
@@ -45,7 +45,14 @@ const nodeHandlers = {
 };
 
 function TabularFileNodeType(props) {
-  return <TabularFileNode {...props} onTabularLoaded={nodeHandlers.onTabularLoaded} />;
+  return (
+    <TabularFileNode
+      {...props}
+      onTabularLoaded={nodeHandlers.onTabularLoaded}
+      onHasHeaderChange={nodeHandlers.onTabularHasHeaderChange}
+      onTransposeChange={nodeHandlers.onTabularTransposeChange}
+    />
+  );
 }
 
 function ColumnDescriptionNodeType(props) {
@@ -97,7 +104,6 @@ const nodeTypes = {
   profileSearch: MetadataProfileSearchNodeType,
   quantityKind: QuantityKindNodeType,
   unit: UnitNode,
-  rdfStore: RDFStoreNode,
   roCrate: ROCrateNode,
   coscine: CoscineNodeType,
 };
@@ -107,19 +113,53 @@ const initialNodes = [
     id: 'tabular-source',
     type: 'tabularFile',
     position: { x: 40, y: 80 },
-    data: { label: 'Tabular file 1', language: 'en' },
+    data: {
+      label: 'Tabular file 1',
+      language: 'en',
+      hasHeader: true,
+      transpose: false,
+    },
   },
   {
-    id: 'tabular',
+    id: 'column-description',
+    type: 'columnDescription',
+    position: { x: 940, y: 80 },
+    data: { label: 'Column Descriptions 1', language: 'en', fields: [] },
+  },
+  {
+    id: 'tabular-preview',
     type: 'previewTabular',
-    position: { x: 280, y: 80 },
+    position: { x: 400, y: 80 },
     data: { label: 'Preview Tabular Data 1', language: 'en' },
+  },
+  {
+    id: 'quantity-kinds',
+    type: 'quantityKind',
+    position: { x: 40, y: 450 },
+    data: { label: 'Quantity Kinds 1', language: 'en' },
+  },
+  {
+    id: 'units',
+    type: 'unit',
+    position: { x: 500, y: 450 },
+    data: { label: 'Units 1', language: 'en' },
+  },
+  {
+    id: 'metadata-form',
+    type: 'metadataForm',
+    position: { x: 960, y: 450 },
+    data: { label: 'Metadata Form 1', language: 'en' },
+  },
+  {
+    id: 'ro-crate',
+    type: 'roCrate',
+    position: { x: 1800, y: 260 },
+    data: { label: 'RO-Crate 1', language: 'en' },
   },
 ];
 
 const tabularPreviewEdgeStyle = { stroke: '#2563eb', strokeWidth: 2 };
 const savedLayoutsStorageKey = 'tabular-rdm.saved-layouts.v1';
-
 /**
  * Highlights connections that carry workflow data between compatible nodes.
  * The styling is visual only; data propagation is handled by deriveNodeData().
@@ -132,10 +172,6 @@ function applySemanticEdgeStyle(edge, nodes) {
       ['previewTabular', 'columnDescription', 'headerSchema'].includes(
         nodeTypesById.get(edge.target),
       )) ||
-    (nodeTypesById.get(edge.source) === 'metadataForm' &&
-      nodeTypesById.get(edge.target) === 'rdfStore') ||
-    (['columnDescription', 'headerSchema'].includes(nodeTypesById.get(edge.source)) &&
-      nodeTypesById.get(edge.target) === 'rdfStore') ||
     (nodeTypesById.get(edge.source) === 'profileSearch' &&
       nodeTypesById.get(edge.target) === 'metadataForm') ||
     (nodeTypesById.get(edge.source) === 'quantityKind' &&
@@ -143,7 +179,6 @@ function applySemanticEdgeStyle(edge, nodes) {
     ([
       'tabularFile',
       'previewTabular',
-      'rdfStore',
       'metadataForm',
       'columnDescription',
       'headerSchema',
@@ -169,7 +204,57 @@ function applySemanticEdgeStyle(edge, nodes) {
 
 const initialEdges = [
   applySemanticEdgeStyle(
-    { id: 'e1-2', source: 'tabular-source', target: 'tabular', animated: true },
+    {
+      id: 'e1-2',
+      source: 'tabular-source',
+      target: 'column-description',
+      animated: true,
+    },
+    initialNodes,
+  ),
+  applySemanticEdgeStyle(
+    {
+      id: 'e1-3',
+      source: 'tabular-source',
+      target: 'tabular-preview',
+      animated: true,
+    },
+    initialNodes,
+  ),
+  applySemanticEdgeStyle(
+    {
+      id: 'e3-4',
+      source: 'quantity-kinds',
+      target: 'units',
+      animated: true,
+    },
+    initialNodes,
+  ),
+  applySemanticEdgeStyle(
+    {
+      id: 'e1-7',
+      source: 'tabular-source',
+      target: 'ro-crate',
+      animated: true,
+    },
+    initialNodes,
+  ),
+  applySemanticEdgeStyle(
+    {
+      id: 'e2-7',
+      source: 'column-description',
+      target: 'ro-crate',
+      animated: true,
+    },
+    initialNodes,
+  ),
+  applySemanticEdgeStyle(
+    {
+      id: 'e6-7',
+      source: 'metadata-form',
+      target: 'ro-crate',
+      animated: true,
+    },
     initialNodes,
   ),
 ];
@@ -177,12 +262,11 @@ const initialEdges = [
 const nodeTemplates = [
   { type: 'tabularFile', label: 'Tabular file', icon: tabularFileIcon },
   { type: 'previewTabular', label: 'Preview Tabular Data', icon: spreadsheetIcon },
-  { type: 'columnDescription', label: 'Column Description', icon: tabularSchemaIcon },
+  { type: 'columnDescription', label: 'Column Descriptions', icon: tabularSchemaIcon },
   { type: 'quantityKind', label: 'Quantity Kinds', icon: qudtAvatar },
   { type: 'unit', label: 'Units', icon: qudtAvatar },
   { type: 'profileSearch', label: 'Metadata Profile Search', icon: aimsIcon },
   { type: 'metadataForm', label: 'Metadata Form', icon: metadataFormIcon },
-  { type: 'rdfStore', label: 'RDF Store', icon: rdfLogo },
   { type: 'roCrate', label: 'RO-Crate', icon: roCrateLogo },
   { type: 'coscine', label: 'Coscine', icon: coscineLogo },
 ];
@@ -324,12 +408,61 @@ function isEmptyRow(row) {
   return row.every((cell) => normalizeCellValue(cell).trim().length === 0);
 }
 
+function getEffectiveColumnCount(row) {
+  for (let index = row.length - 1; index >= 0; index -= 1) {
+    if (normalizeCellValue(row[index]).trim().length > 0) {
+      return index + 1;
+    }
+  }
+
+  return 0;
+}
+
+function readWorksheetRows(worksheet, transpose = false) {
+  const rows = XLSX.utils.sheet_to_json(worksheet, {
+    header: 1,
+    blankrows: transpose,
+    defval: '',
+    raw: false,
+  });
+  let usableRows;
+
+  if (transpose) {
+    const initialColumnCount = getEffectiveColumnCount(rows[0] ?? []);
+    const stopIndex = rows.findIndex(
+      (row) =>
+        isEmptyRow(row) || getEffectiveColumnCount(row) !== initialColumnCount,
+    );
+    usableRows = rows.slice(0, stopIndex < 0 ? rows.length : stopIndex);
+  } else {
+    usableRows = rows.filter((row) => Array.isArray(row) && !isEmptyRow(row));
+  }
+
+  if (!transpose || usableRows.length === 0) {
+    return usableRows;
+  }
+
+  const columnCount = usableRows.reduce(
+    (maxColumns, row) => Math.max(maxColumns, row.length),
+    0,
+  );
+
+  return Array.from({ length: columnCount }, (_, columnIndex) =>
+    usableRows.map((row) => normalizeCellValue(row[columnIndex])),
+  );
+}
+
 /**
  * Parses a loaded workbook into two shapes:
  * - a small first-sheet preview used by preview/description nodes
  * - all sheets as row objects for later RO-Crate CSV export
  */
-function parseTabularWorkbook(buffer, previewRowCount = 5) {
+function parseTabularWorkbook(
+  buffer,
+  previewRowCount = 5,
+  hasHeader = true,
+  transpose = false,
+) {
   const workbook = XLSX.read(buffer, {
     type: 'array',
     cellDates: true,
@@ -341,21 +474,32 @@ function parseTabularWorkbook(buffer, previewRowCount = 5) {
   }
 
   const worksheet = workbook.Sheets[sheetName];
-  const tableRows = XLSX.utils
-    .sheet_to_json(worksheet, {
-      header: 1,
-      blankrows: false,
-      defval: '',
-      raw: false,
-    })
-    .filter((row) => Array.isArray(row) && !isEmptyRow(row));
-  const sheets = workbook.SheetNames.map((name) => ({
-    name,
-    rows: XLSX.utils.sheet_to_json(workbook.Sheets[name], {
-      defval: '',
-      raw: false,
-    }),
-  }));
+  const tableRows = readWorksheetRows(worksheet, transpose);
+  const sheets = workbook.SheetNames.map((name) => {
+    const sheetRows = readWorksheetRows(workbook.Sheets[name], transpose);
+    const sheetColumnCount = sheetRows.reduce(
+      (maxColumns, row) => Math.max(maxColumns, row.length),
+      0,
+    );
+    const sheetHeaders = hasHeader
+      ? Array.from({ length: sheetColumnCount }, (_, index) =>
+          normalizeCellValue(sheetRows[0]?.[index]),
+        )
+      : Array.from(
+          { length: sheetColumnCount },
+          (_, index) => `Column ${index + 1}`,
+        );
+    const firstSheetDataRow = hasHeader ? 1 : 0;
+
+    return {
+      name,
+      rows: sheetRows.slice(firstSheetDataRow).map((row) =>
+        Object.fromEntries(
+          sheetHeaders.map((header, index) => [header, normalizeCellValue(row[index])]),
+        ),
+      ),
+    };
+  });
 
   if (tableRows.length === 0) {
     return { headers: [], rows: [], rowCount: 0, sheetName, sheets };
@@ -365,14 +509,23 @@ function parseTabularWorkbook(buffer, previewRowCount = 5) {
     (maxColumns, row) => Math.max(maxColumns, row.length),
     0,
   );
-  const headers = Array.from({ length: columnCount }, (_, index) =>
-    normalizeCellValue(tableRows[0][index]),
-  );
-  const rows = tableRows.slice(1, previewRowCount + 1).map((row) =>
+  const headers = hasHeader
+    ? Array.from({ length: columnCount }, (_, index) =>
+        normalizeCellValue(tableRows[0][index]),
+      )
+    : Array.from({ length: columnCount }, (_, index) => `Column ${index + 1}`);
+  const firstDataRow = hasHeader ? 1 : 0;
+  const rows = tableRows.slice(firstDataRow, firstDataRow + previewRowCount).map((row) =>
     Array.from({ length: columnCount }, (_, index) => normalizeCellValue(row[index])),
   );
 
-  return { headers, rows, rowCount: Math.max(tableRows.length - 1, 0), sheetName, sheets };
+  return {
+    headers,
+    rows,
+    rowCount: Math.max(tableRows.length - firstDataRow, 0),
+    sheetName,
+    sheets,
+  };
 }
 
 /**
@@ -507,51 +660,6 @@ function getConnectedMetadataFormIds(nodes, edges, profileSearchNodeId) {
 }
 
 /**
- * Collects serialized RDF from metadata-producing nodes connected to RDF Store
- * nodes. RDF Store nodes consume the combined Turtle string via data.rdfInput.
- */
-function propagateMetadataRdf(nodes, edges) {
-  const nodeTypesById = new Map(nodes.map((node) => [node.id, node.type]));
-  const nodeDataById = new Map(nodes.map((node) => [node.id, node.data]));
-  const rdfInputsByNodeId = new Map();
-
-  for (const edge of edges) {
-    if (nodeTypesById.get(edge.target) !== 'rdfStore') {
-      continue;
-    }
-
-    if (
-      !['metadataForm', 'columnDescription', 'headerSchema'].includes(
-        nodeTypesById.get(edge.source),
-      )
-    ) {
-      continue;
-    }
-
-    const serializedRdf = nodeDataById.get(edge.source)?.serializedRdf || '';
-
-    if (serializedRdf) {
-      const existingInputs = rdfInputsByNodeId.get(edge.target) ?? [];
-      rdfInputsByNodeId.set(edge.target, [...existingInputs, serializedRdf]);
-    }
-  }
-
-  return nodes.map((node) => {
-    if (node.type !== 'rdfStore') {
-      return node;
-    }
-
-    return {
-      ...node,
-      data: {
-        ...node.data,
-        rdfInput: (rdfInputsByNodeId.get(node.id) ?? []).join('\n\n'),
-      },
-    };
-  });
-}
-
-/**
  * Applies the selected Quantity Kind as a filter for connected Unit nodes.
  */
 function propagateQuantityKindToUnits(nodes, edges) {
@@ -606,12 +714,11 @@ function propagateROCrateInputs(nodes, edges) {
 
     const sourceType = nodeTypesById.get(edge.source);
     const sourceData = nodeDataById.get(edge.source) ?? {};
-    const rdfContent =
-      sourceType === 'rdfStore'
-        ? sourceData.rdfInput
-        : ['metadataForm', 'columnDescription', 'headerSchema'].includes(sourceType)
-          ? sourceData.serializedRdf
-          : '';
+    const rdfContent = ['metadataForm', 'columnDescription', 'headerSchema'].includes(
+      sourceType,
+    )
+      ? sourceData.serializedRdf
+      : '';
 
     if (rdfContent) {
       const existingInputs = rdfInputsByNodeId.get(edge.target) ?? [];
@@ -761,8 +868,7 @@ function propagateCoscineApplicationProfiles(nodes, edges) {
  */
 function deriveNodeData(nodes, edges, tabularMemory) {
   const flowNodes = recalculateFlows(nodes, edges, tabularMemory);
-  const nodesWithMetadata = propagateMetadataRdf(flowNodes, edges);
-  const nodesWithUnits = propagateQuantityKindToUnits(nodesWithMetadata, edges);
+  const nodesWithUnits = propagateQuantityKindToUnits(flowNodes, edges);
   const nodesWithROCrate = propagateROCrateInputs(nodesWithUnits, edges);
   const nodesWithCoscineInputs = propagateCoscineInputs(nodesWithROCrate, edges);
   const nodesWithCoscineProfiles = propagateCoscineApplicationProfiles(
@@ -787,6 +893,7 @@ export default function App() {
   const nodesRef = useRef(nodes);
   const edgesRef = useRef(edges);
   const tabularMemoryRef = useRef(new Map());
+  const tabularBuffersRef = useRef(new Map());
   const profileDefinitionRequestsRef = useRef(new Map());
 
   useEffect(() => {
@@ -828,9 +935,10 @@ export default function App() {
   );
 
   const onTabularLoaded = useCallback(
-    (nodeId, fileName, buffer) => {
-      const preview = parseTabularWorkbook(buffer, 5);
+    (nodeId, fileName, buffer, hasHeader = true, transpose = false) => {
+      const preview = parseTabularWorkbook(buffer, 5, hasHeader, transpose);
       tabularMemoryRef.current.set(nodeId, preview);
+      tabularBuffersRef.current.set(nodeId, { fileName, buffer });
 
       setNodes((currentNodes) => {
         const nextNodes = deriveNodeData(
@@ -841,6 +949,8 @@ export default function App() {
                   data: {
                     ...node.data,
                     fileName,
+                    hasHeader,
+                    transpose,
                     rowCount: preview.rowCount,
                     sheetName: preview.sheetName,
                   },
@@ -856,6 +966,64 @@ export default function App() {
       });
     },
     [setNodes],
+  );
+
+  const onTabularHasHeaderChange = useCallback(
+    (nodeId, hasHeader) => {
+      const loadedFile = tabularBuffersRef.current.get(nodeId);
+
+      if (loadedFile) {
+        const node = nodesRef.current.find((candidate) => candidate.id === nodeId);
+        onTabularLoaded(
+          nodeId,
+          loadedFile.fileName,
+          loadedFile.buffer,
+          hasHeader,
+          node?.data.transpose === true,
+        );
+        return;
+      }
+
+      setNodes((currentNodes) => {
+        const nextNodes = currentNodes.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, hasHeader } }
+            : node,
+        );
+        nodesRef.current = nextNodes;
+        return nextNodes;
+      });
+    },
+    [onTabularLoaded, setNodes],
+  );
+
+  const onTabularTransposeChange = useCallback(
+    (nodeId, transpose) => {
+      const loadedFile = tabularBuffersRef.current.get(nodeId);
+      const node = nodesRef.current.find((candidate) => candidate.id === nodeId);
+
+      if (loadedFile) {
+        onTabularLoaded(
+          nodeId,
+          loadedFile.fileName,
+          loadedFile.buffer,
+          node?.data.hasHeader !== false,
+          transpose,
+        );
+        return;
+      }
+
+      setNodes((currentNodes) => {
+        const nextNodes = currentNodes.map((candidate) =>
+          candidate.id === nodeId
+            ? { ...candidate, data: { ...candidate.data, transpose } }
+            : candidate,
+        );
+        nodesRef.current = nextNodes;
+        return nextNodes;
+      });
+    },
+    [onTabularLoaded, setNodes],
   );
 
   const onProfileSelect = useCallback(
@@ -1032,6 +1200,8 @@ export default function App() {
 
   Object.assign(nodeHandlers, {
     onTabularLoaded,
+    onTabularHasHeaderChange,
+    onTabularTransposeChange,
     onColumnDescriptionFieldsChange,
     onMetadataRdfChange,
     onProfileSelect,
@@ -1040,20 +1210,22 @@ export default function App() {
   });
 
   const onConnect = useCallback(
-    (connection) =>
-      setEdges((currentEdges) => {
-        const styledConnection = applySemanticEdgeStyle(connection, nodesRef.current);
-        const nextEdges = addEdge(styledConnection, currentEdges);
-        edgesRef.current = nextEdges;
+    (connection) => {
+      const nextEdges = addEdge(
+        applySemanticEdgeStyle(connection, nodesRef.current),
+        edgesRef.current,
+      );
+      const nextNodes = deriveNodeData(
+        nodesRef.current,
+        nextEdges,
+        tabularMemoryRef.current,
+      );
 
-        setNodes((currentNodes) => {
-          const nextNodes = deriveNodeData(currentNodes, nextEdges, tabularMemoryRef.current);
-          nodesRef.current = nextNodes;
-          return nextNodes;
-        });
-
-        return nextEdges;
-      }),
+      nodesRef.current = nextNodes;
+      edgesRef.current = nextEdges;
+      setNodes(nextNodes);
+      setEdges(nextEdges);
+    },
     [setEdges, setNodes],
   );
 
@@ -1078,6 +1250,7 @@ export default function App() {
   const onNodesDelete = useCallback((deletedNodes) => {
     for (const node of deletedNodes) {
       tabularMemoryRef.current.delete(node.id);
+      tabularBuffersRef.current.delete(node.id);
 
       if (node.type === 'profileSearch') {
         profileDefinitionRequestsRef.current.get(node.id)?.abort();

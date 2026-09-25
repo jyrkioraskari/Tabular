@@ -426,7 +426,7 @@ body {
 }
 
 .tabular-file-node {
-  min-width: 180px;
+  width: 240px;
   padding: 8px;
   border-radius: 12px;
   background: #ffffff;
@@ -473,10 +473,25 @@ body {
   display: none;
 }
 
+.tabular-file-node__header-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #334155;
+  cursor: pointer;
+}
+
+.tabular-file-node__header-option input {
+  margin: 0;
+}
+
 .tabular-file-node__meta {
   margin: 8px 0 0;
   font-size: 0.75rem;
   color: #475569;
+  overflow-wrap: anywhere;
 }
 
 .preview-tabular-data-node {

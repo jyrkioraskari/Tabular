@@ -2,8 +2,45 @@ import * as XLSX from 'xlsx';
 import { ROCrate } from 'ro-crate';
 import JSZip from 'jszip';
 
+const DEFAULT_CRATE_NAME = 'Research dataset';
+const DEFAULT_CRATE_DESCRIPTION = 'Research dataset packaged as an RO-Crate.';
+const DEFAULT_LICENSE_NAME = 'Creative Commons Attribution 4.0 International';
+const DEFAULT_LICENSE_ID = 'https://creativecommons.org/licenses/by/4.0/';
+const RO_CRATE_VERSION = '1.3';
+const RO_CRATE_SPEC_ID = `https://w3id.org/ro/crate/${RO_CRATE_VERSION}`;
+const RO_CRATE_CONTEXT_ID = `${RO_CRATE_SPEC_ID}/context`;
+
 function normalize(value) {
   return String(value ?? '').trim().toLocaleLowerCase();
+}
+
+function resolveLicenseId(licenseName) {
+  if (/^https?:\/\//i.test(licenseName)) {
+    return licenseName;
+  }
+
+  if (/^(cc[- ]?by[- ]?4(?:\.0)?|creative commons attribution 4\.0 international)$/i.test(licenseName)) {
+    return DEFAULT_LICENSE_ID;
+  }
+
+  return '#license';
+}
+
+function serializeROCrateMetadata(crate) {
+  const metadata = crate.toJSON();
+  const localContext = { '@vocab': 'http://schema.org/' };
+
+  metadata['@context'] = [RO_CRATE_CONTEXT_ID, localContext];
+
+  const descriptor = metadata['@graph'].find(
+    (entity) => entity['@id'] === 'ro-crate-metadata.json',
+  );
+  if (!descriptor) {
+    throw new Error('RO-Crate metadata descriptor was not generated.');
+  }
+
+  descriptor.conformsTo = { '@id': RO_CRATE_SPEC_ID };
+  return metadata;
 }
 
 export function slugifyCrateValue(value) {
@@ -49,24 +86,32 @@ export function parseROCrateConfig(rows = []) {
 export async function createROCrateZip(options = {}) {
   const {
     files = [],
-    crateName = 'Template name for a RO-Crate ZIP (TS)',
-    description = 'Template for the RO-Crate description.',
-    datasetLicense = 'CC BY 4.0',
+    crateName = DEFAULT_CRATE_NAME,
+    description = DEFAULT_CRATE_DESCRIPTION,
+    datasetLicense = DEFAULT_LICENSE_NAME,
   } = options;
 
   const crate = new ROCrate();
 
-  crate.rootDataset.name = crateName;
-  crate.rootDataset.description = description;
+  const normalizedCrateName = String(crateName ?? '').trim() || DEFAULT_CRATE_NAME;
+  const normalizedDescription =
+    String(description ?? '').trim() || DEFAULT_CRATE_DESCRIPTION;
+  const normalizedLicense =
+    String(datasetLicense ?? '').trim() || DEFAULT_LICENSE_NAME;
+  const licenseId = resolveLicenseId(normalizedLicense);
+
+  crate.rootDataset.name = normalizedCrateName;
+  crate.rootDataset.description = normalizedDescription;
   crate.rootDataset.datePublished = new Date().toISOString().split('T')[0];
 
   const license = {
-    '@id': 'https://creativecommons.org/licenses/by/4.0/',
+    '@id': licenseId,
     '@type': 'CreativeWork',
-    name: datasetLicense,
+    name: normalizedLicense,
+    description: `${normalizedLicense} license.`,
   };
   crate.addEntity(license);
-  crate.rootDataset.license = { '@id': license['@id'] };
+  crate.rootDataset.license = { '@id': licenseId };
 
   const zip = new JSZip();
   const fileRefs = [];
@@ -77,6 +122,7 @@ export async function createROCrateZip(options = {}) {
       '@type': 'File',
       name: f.fileName,
       encodingFormat: f.mimeType ?? 'application/octet-stream',
+      contentSize: String(new Blob([f.content]).size),
     });
 
     fileRefs.push({ '@id': f.fileName });
@@ -87,7 +133,8 @@ export async function createROCrateZip(options = {}) {
     crate.rootDataset.hasPart = fileRefs;
   }
 
-  zip.file('ro-crate-metadata.json', `${JSON.stringify(crate.toJSON(), null, 2)}\n`);
+  const metadata = serializeROCrateMetadata(crate);
+  zip.file('ro-crate-metadata.json', `${JSON.stringify(metadata, null, 2)}\n`);
 
   return zip.generateAsync({ type: 'blob', mimeType: 'application/zip' });
 }
@@ -107,8 +154,9 @@ export async function createROCratePackage({ jsonLdContent, sheets = [] } = {}) 
   );
   const datasetTitle =
     config.dataset_title || config.dataset_label || config.title || datasetId;
-  const datasetDescription = config.dataset_description || config.description || '';
-  const datasetLicense = config.license || '';
+  const datasetDescription =
+    config.dataset_description || config.description || DEFAULT_CRATE_DESCRIPTION;
+  const datasetLicense = config.license || DEFAULT_LICENSE_NAME;
   const sheetCsvFiles = sheets.map((sheet, index) => {
     const worksheet = XLSX.utils.json_to_sheet(sheet.rows);
     const csvContent = XLSX.utils.sheet_to_csv(worksheet);
@@ -122,9 +170,9 @@ export async function createROCratePackage({ jsonLdContent, sheets = [] } = {}) 
   const blob = await createROCrateZip({
     files: [
       {
-        fileName: 'data.json',
+        fileName: 'metadata.ttl',
         content: jsonLdContent.jsonLd,
-        mimeType: 'application/ld+json',
+        mimeType: 'text/turtle',
       },
       ...sheetCsvFiles,
     ],
