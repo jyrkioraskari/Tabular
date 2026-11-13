@@ -72,8 +72,9 @@ its individual fields.
 
 To keep your work across browser sessions, enable **Remember typed metadata in
 this browser** and **Remember column annotations in this browser** in their
-respective nodes. These options save local browser copies only. Use **Delete
-saved browser copy** in either node to remove its stored data.
+respective nodes. These options save local browser copies only. Uncheck
+**Remember column annotations in this browser** to delete that node copy and
+its remembered choices. Metadata Form has its own delete control.
 
 ### 5. Download the package
 
@@ -114,6 +115,7 @@ task-focused pages:
 - [Use the canvas and connections](docs/interface.md)
 - [Troubleshoot safely](docs/troubleshooting.md)
 - [Develop and build Tabular](docs/development.md)
+- [Understand and extend column annotations](docs/column-annotation-developer-guide.md)
 
 Each workflow node also has an `i` button with instructions for that step.
 

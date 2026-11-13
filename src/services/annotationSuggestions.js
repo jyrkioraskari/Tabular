@@ -1,6 +1,7 @@
 import { EMBEDDING_MODEL, embedTexts } from './annotationEmbeddings.js';
 import { rerankCandidates } from './annotationReranker.js';
 import { loadVocabularySnapshot, searchTerminologyTerms } from './terminologyApi.js';
+import { selectAutoAnnotations } from './annotationAutoApply.js';
 
 const cache = new Map();
 export const DEFAULT_RETRIEVAL_CUTOFF = 12;
@@ -79,6 +80,10 @@ export async function evaluateAnnotationSuggestions(labelledColumns, options = {
       ? await (options.rerank || rerankCandidates)(query, retrieval.candidates, options)
       : { ranked: [], ambiguous: false };
     const supported = reranked.ranked.filter((term) => term.supported).slice(0, 3);
+    const automatic = selectAutoAnnotations(query, {
+      meaning: { source: retrieval.source, candidates: supported, ambiguous: reranked.ambiguous },
+    }, [], { vocabularyId: options.ontologyId || '', language: options.language || 'en', localizedUnitLabels: { language: options.language || 'en', labels: {} } });
+    const autoUri = automatic.meaning?.choice.iri || null;
     rows.push({
       goldUri: item.goldUri,
       retrievalHit: retrieval.candidates.some((term) => term.iri === item.goldUri),
@@ -86,9 +91,23 @@ export async function evaluateAnnotationSuggestions(labelledColumns, options = {
       baselineHit3: baseline.slice(0, 3).some((term) => term.iri === item.goldUri),
       afterHit3: supported.some((term) => term.iri === item.goldUri),
       abstained: supported.length === 0,
+      autoApplied: Boolean(autoUri),
+      autoCorrect: Boolean(autoUri && autoUri === item.goldUri),
       source: retrieval.source,
     });
   }
   const rate = (key) => rows.length ? rows.filter((row) => row[key]).length / rows.length : 0;
-  return { count: rows.length, retrievalCutoff: options.cutoff || DEFAULT_RETRIEVAL_CUTOFF, recallAtCutoff: rate('retrievalHit'), hitAt3Before: rate('beforeHit3'), hitAt3After: rate('afterHit3'), baselineHit3: rate('baselineHit3'), abstentionRate: rate('abstained'), rows };
+  const autoAppliedCount = rows.filter((row) => row.autoApplied).length;
+  return {
+    count: rows.length,
+    retrievalCutoff: options.cutoff || DEFAULT_RETRIEVAL_CUTOFF,
+    recallAtCutoff: rate('retrievalHit'),
+    hitAt3Before: rate('beforeHit3'),
+    hitAt3After: rate('afterHit3'),
+    baselineHit3: rate('baselineHit3'),
+    abstentionRate: rate('abstained'),
+    autoApplyRate: rate('autoApplied'),
+    autoPrecision: autoAppliedCount ? rows.filter((row) => row.autoCorrect).length / autoAppliedCount : null,
+    rows,
+  };
 }

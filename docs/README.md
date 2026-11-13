@@ -15,6 +15,7 @@ specific part of the workflow.
 | create and rearrange workflows | [Use the visual workflow](interface.md) |
 | solve a problem or check data safety | [Troubleshooting and safe use](troubleshooting.md) |
 | run, build, or release the software | [Development and releases](development.md) |
+| understand or extend column annotation code | [Column annotation developer guide](column-annotation-developer-guide.md) |
 
 ## A useful mental model
 

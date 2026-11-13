@@ -1022,6 +1022,29 @@ body {
   background: #eff6ff;
 }
 
+.column-description-node__resolved {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  min-height: 26px;
+  font-size: 0.72rem;
+}
+
+.column-description-node__resolved-description {
+  flex-basis: 100%;
+  color: #475569;
+}
+
+.column-description-node__resolved button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #1d4ed8;
+  font: inherit;
+  cursor: pointer;
+}
+
 .column-description-node__empty {
   margin: 0;
   font-size: 0.8rem;
@@ -1174,12 +1197,61 @@ body {
   color: #475569;
 }
 
+.column-description-node__group-memory {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.column-description-node__memory-code-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.column-description-node__memory-code-row input {
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font: inherit;
+}
+
+.column-description-node__memory-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.column-description-node__memory-option input {
+  margin: 0;
+}
+
+.column-description-node__memory-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.column-description-node__browser-storage .column-description-node__memory-actions button,
+.column-description-node__browser-storage .column-description-node__memory-code-row button {
+  margin-top: 0;
+}
+
 .metadata-form-node__remember,
 .column-description-node__remember {
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
+}
+
+.column-description-node__remember {
+  margin-top: 8px;
 }
 
 .metadata-form-node__remember input,

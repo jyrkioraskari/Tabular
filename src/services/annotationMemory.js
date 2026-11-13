@@ -84,8 +84,8 @@ export function clearAnnotationMemoryForNode(nodeId, storage = globalThis.localS
   return remaining;
 }
 
-export function findRememberedAnnotations(field, records, { vocabularyId = '' } = {}) {
-  if (!String(field?.description || '').trim() && !String(field?.header || '').trim()) return { meaning: null, unit: null };
+export function rankRememberedAnnotations(field, records, { vocabularyId = '' } = {}) {
+  if (!String(field?.description || '').trim() && !String(field?.header || '').trim()) return [];
   const currentDescription = normalized(field.description);
   const currentHeader = normalized(field.header);
   const currentTokens = tokens(field.description);
@@ -108,8 +108,13 @@ export function findRememberedAnnotations(field, records, { vocabularyId = '' } 
     // one matching description term, unless the earlier choice had no description.
     if (!sameDescription && descriptionSimilarity < 0.58 && !(similarHeader && (descriptionSimilarity >= 0.25 || !item.description?.trim() || !field.description?.trim()))) return [];
     const score = (sameDescription ? 1 : descriptionSimilarity) + (similarHeader ? 0.3 * headerSimilarity : 0);
-    return [{ ...item, score }];
+    return [{ ...item, score, sameDescription, sameHeader: Boolean(currentHeader && currentHeader === previousHeader), headerSimilarity, descriptionSimilarity }];
   }).sort((a, b) => b.score - a.score || b.savedAt - a.savedAt);
+  return candidates;
+}
+
+export function findRememberedAnnotations(field, records, options = {}) {
+  const candidates = rankRememberedAnnotations(field, records, options);
   return {
     meaning: candidates.find((item) => item.kind === 'meaning') || null,
     unit: candidates.find((item) => item.kind === 'unit') || null,

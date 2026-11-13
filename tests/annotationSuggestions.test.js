@@ -70,7 +70,8 @@ test('evaluation reports retrieval, before and after Hit@3, and abstention', asy
     ontologyId: 'test', snapshotLoader: async () => ({ terms, fingerprint: 'test-version-2' }),
     embed: async (texts) => texts.map((text) => text.includes('Voltage') ? [0, 1] : [1, 0]),
     search: async () => ({ terms: [terms[1], terms[0]] }),
-    rerank: async () => ({ ranked: [{ ...terms[0], supported: true }, { ...terms[1], supported: false }], ambiguous: false }),
+    rerank: async (_, candidates) => ({ ranked: [{ ...candidates[0], supported: true }, { ...candidates[1], supported: false }], ambiguous: false }),
   });
   assert.deepEqual([result.recallAtCutoff, result.hitAt3Before, result.hitAt3After, result.abstentionRate], [1, 1, 1, 0]);
+  assert.deepEqual([result.autoApplyRate, result.autoPrecision], [1, 1]);
 });

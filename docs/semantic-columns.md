@@ -33,7 +33,9 @@ header.
 
 Alternatively, connect **Terminology Service → Column Descriptions**. Each
 description field then searches concepts while you type; choose a suggestion to
-store its label and persistent IRI without dragging. Dragging still works.
+store its persistent IRI without dragging. Your typed description is preserved.
+Dragging still works. Strong, unambiguous suggestions may be linked
+automatically; other candidates remain in the review panel.
 
 Tabular displays the readable label and retains the IRI. Hover over the linked
 value to inspect it. Choose a concept because its definition matches the data,
@@ -47,9 +49,14 @@ not merely because its label resembles the header.
 4. Drag the correct result from **Units** into the column's Unit field.
 
 This copies the selected unit into that field. Alternatively, connect
-**Units → Column Descriptions**: each unit field then searches QUDT units while
-you type, filtered by the quantity kind selected in the connected
-**Quantity Kinds → Units** pair. Dragging still works.
+**Units → Column Descriptions** to filter QUDT search by the selected quantity
+kind. You can also type in the Unit field and search QUDT without that
+connection. Dragging still works. An explicit, unique unit may be filled
+automatically.
+
+An automatically applied value appears by name with **Change**. Choose
+**Change** to edit or search for another value, or drag a replacement. Tabular
+does not replace an existing value automatically after you edit it.
 
 The QUDT URI distinguishes units that may have similar names or symbols. Do not
 add units to identifiers, categories, free text, or genuinely unitless values.
@@ -76,4 +83,4 @@ For the broader distinction, read [Why Tabular](why-tabular.md).
 
 ---
 
-[Documentation guide](README.md) · [Next: Data and RO-Crate](data-and-ro-crate.md)
+[Documentation guide](README.md) · [Column annotation developer guide](column-annotation-developer-guide.md) · [Next: Data and RO-Crate](data-and-ro-crate.md)
