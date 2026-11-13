@@ -5,7 +5,7 @@ shareable research outputs. Its visual workflow brings column annotation,
 dataset metadata, RO-Crate packaging, and optional Coscine deposit into one
 place.
 
-![The Tabular workflow canvas](screen.png)
+![The Tabular workflow canvas](screen2.png)
 
 ## Start Tabular
 
@@ -101,7 +101,7 @@ Enter an API token, load and select a writable resource, complete and save the
 resulting form, then choose **Upload RO-Crate**. Nothing is uploaded before
 that final action.
 
-![A Tabular workflow connected to Coscine](screen2.png)
+![A Tabular workflow connected to Coscine](screen.png)
 
 ## Learn more
 
