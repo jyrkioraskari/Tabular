@@ -2029,3 +2029,35 @@ body {
     width: calc(100vw - 40px);
   }
 }
+.column-description-node__review-controls,
+.column-description-node__review {
+  margin: 8px 12px;
+  padding: 8px;
+  border: 1px solid #d5dce5;
+  border-radius: 5px;
+  background: #f9fbfe;
+}
+
+.column-description-node__proposal-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  margin: 8px 12px;
+  padding: 0 8px;
+}
+
+.column-description-node__proposal-scroll:empty { display: none; }
+.column-description-node__proposal-scroll .column-description-node__review { margin: 8px 0; }
+.column-description-node__memory-heading { cursor: help; }
+
+.column-description-node__review-controls label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.column-description-node__review-controls input { min-width: 8rem; }
+.column-description-node__review-candidate { border-top: 1px solid #d5dce5; margin-top: 6px; padding-top: 6px; }
+.column-description-node__review p { margin: 4px 0; }

@@ -43,6 +43,7 @@ const nodeHandlers = {
   onTabularTransposeChange: undefined,
   onTabularRdfConversionChange: undefined,
   onColumnDescriptionFieldsChange: undefined,
+  onTerminologyVocabularyChange: undefined,
   onMetadataRdfChange: undefined,
   onProfileSelect: undefined,
   onCoscineApplicationProfileLoaded: undefined,
@@ -69,6 +70,10 @@ function ColumnDescriptionNodeType(props) {
       onFieldsChange={nodeHandlers.onColumnDescriptionFieldsChange}
     />
   );
+}
+
+function TerminologyNodeType(props) {
+  return <TerminologyNode {...props} onVocabularyChange={nodeHandlers.onTerminologyVocabularyChange} />;
 }
 
 function MetadataFormNodeType(props) {
@@ -112,7 +117,7 @@ const nodeTypes = {
   profileSearch: MetadataProfileSearchNodeType,
   quantityKind: QuantityKindNodeType,
   unit: UnitNode,
-  terminology: TerminologyNode,
+  terminology: TerminologyNodeType,
   roCrate: ROCrateNode,
   coscine: CoscineNodeType,
 };
@@ -562,16 +567,17 @@ const appText = {
  * Creates editable column-description rows from spreadsheet headers while
  * preserving any descriptions and units already entered for unchanged headers.
  */
-function buildColumnDescriptionFields(headers, previousFields = []) {
+function buildColumnDescriptionFields(headers, previousFields = [], columnNotes = []) {
   const previousByHeader = new Map(
     previousFields.map((field) => [field.header, field]),
   );
 
-  return headers.map((header) => {
+  return headers.map((header, index) => {
     const existing = previousByHeader.get(header);
 
     return {
       header,
+      notes: columnNotes[index] || '',
       description: existing?.description ?? '',
       descriptionUri: existing?.descriptionUri ?? '',
       descriptionLanguage: existing?.descriptionLanguage ?? '',
@@ -754,8 +760,9 @@ function recalculateFlows(nodes, edges, tabularMemory) {
       continue;
     }
 
-    payloadByNodeId.set(node.id, preview);
-    queue.push({ nodeId: node.id, payload: preview });
+    const sourcePayload = { ...preview, sourceIdentity: `${node.id}:${node.data.fileName || ''}` };
+    payloadByNodeId.set(node.id, sourcePayload);
+    queue.push({ nodeId: node.id, payload: sourcePayload });
   }
 
   while (queue.length > 0) {
@@ -807,7 +814,9 @@ function recalculateFlows(nodes, edges, tabularMemory) {
             ...node,
             data: {
               ...node.data,
-              fields: buildColumnDescriptionFields(payload.headers, node.data.fields),
+              fields: buildColumnDescriptionFields(payload.headers, node.data.fields, payload.columnNotes),
+              sheetName: payload.sheetName,
+              workbookKey: `${payload.sourceIdentity}:${payload.sheetName}:${payload.headers.join('|')}:${(payload.columnNotes || []).join('|')}`,
             },
           }
         : {
@@ -815,6 +824,8 @@ function recalculateFlows(nodes, edges, tabularMemory) {
             data: {
               ...node.data,
               fields: [],
+              sheetName: '',
+              workbookKey: '',
             },
           };
     }
@@ -1116,6 +1127,7 @@ function annotateColumnDescriptionServiceInputs(nodes, edges) {
   const nodeTypesById = new Map(nodes.map((node) => [node.id, node.type]));
   const nodeDataById = new Map(nodes.map((node) => [node.id, node.data]));
   const terminologyColumnNodeIds = new Set();
+  const vocabularyByColumnNodeId = new Map();
   const unitInputByColumnNodeId = new Map();
 
   for (const edge of edges) {
@@ -1128,6 +1140,7 @@ function annotateColumnDescriptionServiceInputs(nodes, edges) {
 
     if (sourceType === 'terminology') {
       terminologyColumnNodeIds.add(edge.target);
+      vocabularyByColumnNodeId.set(edge.target, nodeDataById.get(edge.source)?.selectedVocabularyId || '');
     }
 
     if (sourceType === 'unit') {
@@ -1149,6 +1162,7 @@ function annotateColumnDescriptionServiceInputs(nodes, edges) {
       data: {
         ...node.data,
         terminologyInput: terminologyColumnNodeIds.has(node.id),
+        selectedVocabularyId: vocabularyByColumnNodeId.get(node.id) || '',
         unitInput: unitInputByColumnNodeId.get(node.id) ?? null,
       },
     };
@@ -1432,6 +1446,17 @@ export default function App() {
     },
     [setNodes],
   );
+
+  const onTerminologyVocabularyChange = useCallback((nodeId, selectedVocabularyId) => {
+    setNodes((currentNodes) => {
+      const updated = currentNodes.map((node) => node.id === nodeId
+        ? { ...node, data: { ...node.data, selectedVocabularyId } }
+        : node);
+      const derived = annotateColumnDescriptionServiceInputs(updated, edgesRef.current);
+      nodesRef.current = derived;
+      return derived;
+    });
+  }, [setNodes]);
 
   const onTabularLoaded = useCallback(
     (nodeId, fileName, buffer, hasHeader, transpose, manualTranspose = false, manualHeader = false) => {
@@ -1789,6 +1814,7 @@ export default function App() {
     onTabularTransposeChange,
     onTabularRdfConversionChange,
     onColumnDescriptionFieldsChange,
+    onTerminologyVocabularyChange,
     onMetadataRdfChange,
     onProfileSelect,
     onCoscineApplicationProfileLoaded,

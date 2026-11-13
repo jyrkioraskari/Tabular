@@ -4,6 +4,8 @@ import { createServer } from 'node:http';
 import { extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { proxyRdfResource } from './rdfProxy.js';
+import { proxyAnnotationRerank } from './annotationRerankProxy.js';
+import { handleGroupAnnotationMemory } from './groupAnnotationMemoryServer.js';
 
 const defaultPort = Number(process.env.PORT) || 4173;
 const distDir = resolve(fileURLToPath(new URL('./dist', import.meta.url)));
@@ -176,6 +178,14 @@ async function serveStatic(request, response) {
 export function createTabularRdmServer() {
   return createServer(async (request, response) => {
     try {
+      if (request.url === '/annotation-rerank' && request.method === 'POST') {
+        await proxyAnnotationRerank(request, response);
+        return;
+      }
+      if (request.url.startsWith('/annotation-memory/group/')) {
+        await handleGroupAnnotationMemory(request, response);
+        return;
+      }
       if (request.url.startsWith('/rdf-resource')) {
         await proxyRdfResource(request, response);
         return;

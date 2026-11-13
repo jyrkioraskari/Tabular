@@ -18,6 +18,22 @@ function normalizeCellValue(value) {
   return String(value);
 }
 
+function headerCellNotes(worksheet, headers, transpose, layeredHeaders) {
+  if (transpose || layeredHeaders || headers.length < 2) return headers.map(() => '');
+  const rows = [];
+  for (let row = 0; row < 30; row += 1) {
+    const matches = headers.every((header, column) =>
+      normalizeCellValue(worksheet[XLSX.utils.encode_cell({ r: row, c: column })]?.v).trim() === header,
+    );
+    if (matches) rows.push(row);
+  }
+  if (rows.length !== 1) return headers.map(() => '');
+  return headers.map((_, column) => {
+    const comments = worksheet[XLSX.utils.encode_cell({ r: rows[0], c: column })]?.c;
+    return Array.isArray(comments) ? comments.map((comment) => comment.t).filter(Boolean).join(' ') : '';
+  });
+}
+
 function isEmptyRow(row) {
   return row.every((cell) => normalizeCellValue(cell).trim().length === 0);
 }
@@ -117,12 +133,16 @@ export function parseTabularWorkbook(
         : `Column ${index + 1}`,
     );
     const firstDataRow = resolvedHasHeader ? 1 : 0;
+    const columnNotes = resolvedHasHeader
+      ? headerCellNotes(sheet, headers, resolvedTranspose, effectiveLayeredHeaders)
+      : headers.map(() => '');
 
     return {
       name,
       rawRows,
       tableRows,
       headers,
+      columnNotes,
       firstDataRow,
       hasHeader: resolvedHasHeader,
       transpose: resolvedTranspose,
@@ -187,6 +207,7 @@ export function parseTabularWorkbook(
     name: sheetName,
     tableRows,
     headers,
+    columnNotes,
     firstDataRow,
     hasHeader: resolvedHasHeader,
     transpose: resolvedTranspose,
@@ -211,6 +232,7 @@ export function parseTabularWorkbook(
 
   return {
     headers,
+    columnNotes,
     rows,
     rowCount: Math.max(tableRows.length - firstDataRow, 0),
     sheetName,

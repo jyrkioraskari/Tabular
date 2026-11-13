@@ -12,7 +12,7 @@ export const TERMINOLOGY_LOGO_URL =
 const SEARCH_DEBOUNCE_MS = 400;
 const TERM_DRAG_MIME_TYPE = 'application/tabulatrdm-term';
 
-export default function TerminologyNode({ id, data, selected }) {
+export default function TerminologyNode({ id, data, selected, onVocabularyChange }) {
   const abortControllerRef = useRef(null);
   const [searchText, setSearchText] = useState(data.defaultQuery ?? '');
   const [terms, setTerms] = useState([]);
@@ -21,6 +21,7 @@ export default function TerminologyNode({ id, data, selected }) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const language = data.language ?? 'en';
+  const selectedVocabularyId = data.selectedVocabularyId || '';
 
   const runSearch = useCallback(async (query) => {
     const trimmedQuery = query.trim();
@@ -46,6 +47,7 @@ export default function TerminologyNode({ id, data, selected }) {
       const result = await searchTerminologyTerms({
         query: trimmedQuery,
         language,
+        ontologyId: selectedVocabularyId || undefined,
         limit: data.limit,
         signal: abortController.signal,
       });
@@ -76,7 +78,7 @@ export default function TerminologyNode({ id, data, selected }) {
         setIsLoading(false);
       }
     }
-  }, [data.limit, language]);
+  }, [data.limit, language, selectedVocabularyId]);
 
   const handleSubmit = useCallback((event) => {
     event.preventDefault();
@@ -116,6 +118,8 @@ export default function TerminologyNode({ id, data, selected }) {
       </div>
 
       <form className="terminology-node__form nodrag nopan" onSubmit={handleSubmit}>
+        <label className="terminology-node__label" htmlFor={`terminology-vocabulary-${id}`}>Selected vocabulary ID</label>
+        <input id={`terminology-vocabulary-${id}`} className="terminology-node__input" value={selectedVocabularyId} onChange={(event) => onVocabularyChange?.(id, event.target.value.trim())} placeholder="e.g. SWEET" />
         <label className="terminology-node__label" htmlFor={`terminology-search-${id}`}>
           Search concepts
         </label>
@@ -177,6 +181,11 @@ export default function TerminologyNode({ id, data, selected }) {
                   >
                     Open concept
                   </a>
+                  {term.ontologyId && term.ontologyId !== selectedVocabularyId ? (
+                    <button type="button" className="terminology-node__link nodrag" onClick={() => onVocabularyChange?.(id, term.ontologyId)}>
+                      Use {term.ontologyPrefix || term.ontologyId} vocabulary
+                    </button>
+                  ) : null}
                 </li>
               );
             })}

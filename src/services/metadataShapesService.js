@@ -247,9 +247,11 @@ export function fetchExternalMetadataRdf(url) {
     })
       .then(async (response) => {
         if (!response.ok) {
-          const detail = await response.text().catch(() => '');
+          const payload = await response.json().catch(() => null);
           throw new Error(
-            detail || `Unable to load metadata vocabulary (${response.status}).`,
+            payload?.message
+              ? `${payload.message} (${payload.upstreamStatus || response.status}): ${normalizedUrl}`
+              : `Unable to load metadata vocabulary (${response.status}): ${normalizedUrl}`,
           );
         }
 
@@ -278,7 +280,7 @@ export function fetchExternalMetadataRdf(url) {
  * dereferenceable class graph, but keep the usable graphs when one vocabulary
  * endpoint is unavailable; owl:imports may still supply the missing class.
  */
-export async function fetchExternalClassInstances(classes) {
+export async function fetchExternalClassInstances(classes, { onError } = {}) {
   const classUrls = typeof classes === 'string' ? [classes] : Array.from(classes ?? []);
   const results = await Promise.allSettled(
     classUrls.map(async (classUrl) => {
@@ -289,6 +291,11 @@ export async function fetchExternalClassInstances(classes) {
   const loadedGraphs = results
     .filter((result) => result.status === 'fulfilled')
     .map((result) => result.value);
+
+  const failures = results.flatMap((result, index) => result.status === 'rejected'
+    ? [{ url: classUrls[index], error: result.reason }]
+    : []);
+  if (failures.length) onError?.(failures);
 
   if (!loadedGraphs.length && results.length) {
     throw results.find((result) => result.status === 'rejected').reason;

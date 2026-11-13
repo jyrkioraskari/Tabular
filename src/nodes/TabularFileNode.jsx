@@ -154,11 +154,7 @@ export default function TabularFileNode({
         onChange={handleFileChange}
       />
       {data.fileName ? (
-        <p className="tabular-file-node__meta">
-          {data.fileName} ({data.rowCount} rows)
-          {data.sheetName ? `, ${data.sheetName}` : ''}
-          {data.layoutNote ? `, ${data.layoutNote}` : ''}
-        </p>
+        <p className="tabular-file-node__meta">{data.fileName}</p>
       ) : (
         <p className="tabular-file-node__meta">No tabular file loaded</p>
       )}

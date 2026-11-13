@@ -36,6 +36,7 @@ export default function MetadataFormNode({ id, data, selected, onRdfChange }) {
   const [hasSaved, setHasSaved] = useState(false);
   const [defaultShapes, setDefaultShapes] = useState('');
   const [shapesError, setShapesError] = useState('');
+  const [vocabularyWarning, setVocabularyWarning] = useState('');
   const shapes = data.shapes || defaultShapes;
   const formKey = data.shapesKey || (data.shapes ? `profile-${data.profileBaseUri}` : 'default');
   const profileId = data.shapesSource === 'coscine'
@@ -130,7 +131,20 @@ export default function MetadataFormNode({ id, data, selected, onRdfChange }) {
     // owl:imports supplies scoped vocabulary graphs; sh:class can also point
     // directly at a vocabulary. Supporting both covers AIMS and Coscine SHACL.
     formElement.setRdfUrlResolver?.(fetchExternalMetadataRdf);
-    formElement.setClassInstanceProvider?.(fetchExternalClassInstances);
+    formElement.setClassInstanceProvider?.(async (classes) => {
+      try {
+        return await fetchExternalClassInstances(classes, {
+          onError: (failures) => {
+            if (formRef.current === formElement) {
+              setVocabularyWarning(`${failures.length} external metadata vocabular${failures.length === 1 ? 'y is' : 'ies are'} temporarily unavailable. Some choice lists may be incomplete.`);
+            }
+          },
+        });
+      } catch {
+        // The form can still render its shapes and any inline sh:in choices.
+        return '';
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -226,6 +240,7 @@ export default function MetadataFormNode({ id, data, selected, onRdfChange }) {
   useEffect(() => {
     setIsValid(false);
     setHasSaved(false);
+    setVocabularyWarning('');
 
     // A form prefilled with carried values keeps its RDF downstream; the form
     // re-emits on its first change. A blank form starts without metadata.
@@ -264,6 +279,8 @@ export default function MetadataFormNode({ id, data, selected, onRdfChange }) {
           </p>
         )}
       </div>
+
+      {vocabularyWarning ? <p className="metadata-form-node__status" role="status">{vocabularyWarning}</p> : null}
 
       <p className="metadata-form-node__status">
         {hasSaved

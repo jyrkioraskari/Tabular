@@ -11,6 +11,15 @@ function workbookBuffer(sheets) {
   return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 }
 
+test('associates a header cell comment only with its column', () => {
+  const workbook = XLSX.utils.book_new();
+  const sheet = XLSX.utils.aoa_to_sheet([['Force', 'Time'], [12, 3], [14, 4]]);
+  sheet.A1.c = [{ a: 'Researcher', t: 'Actuator force [kN]' }];
+  XLSX.utils.book_append_sheet(workbook, sheet, 'Experiment');
+  const parsed = parseTabularWorkbook(XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }));
+  assert.deepEqual(parsed.columnNotes, ['Actuator force [kN]', '']);
+});
+
 test('automatically rotates parameter rows and honors a manual override', () => {
   const buffer = workbookBuffer({ Data: [
     ['Temperature', 20, 21],

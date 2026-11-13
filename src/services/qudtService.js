@@ -54,6 +54,7 @@ const QUDT_QUANTITY_KIND = namedNode('http://qudt.org/schema/qudt/QuantityKind')
 const QUDT_APPLICABLE_UNIT = namedNode('http://qudt.org/schema/qudt/applicableUnit');
 const QUDT_HAS_QUANTITY_KIND = namedNode('http://qudt.org/schema/qudt/hasQuantityKind');
 const QUDT_UNIT = namedNode('http://qudt.org/schema/qudt/Unit');
+const QUDT_SYMBOL = namedNode('http://qudt.org/schema/qudt/symbol');
 
 let quantityKindStoreRequest;
 let unitStoreRequest;
@@ -251,6 +252,7 @@ function buildQuantityRows(store) {
     const quantityKinds = store
       .getObjects(unit, QUDT_HAS_QUANTITY_KIND, null)
       .map((quantityKind) => quantityKind.value);
+    const symbols = store.getObjects(unit, QUDT_SYMBOL, null).map((symbol) => symbol.value);
 
     for (const label of labelValues) {
       const row = {
@@ -258,6 +260,7 @@ function buildQuantityRows(store) {
         label: label?.value ?? '',
         labelLanguage: label?.language || '',
         quantityKinds,
+        symbols,
       };
 
       rowsByKey.set(`${row.unit}\n${row.label}\n${row.labelLanguage}`, row);

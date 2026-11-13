@@ -127,10 +127,24 @@ export async function proxyRdfResource(request, response) {
 
   try {
     const upstreamResponse = await fetchPublicRdf(target);
+    if (!upstreamResponse.ok) {
+      await upstreamResponse.body?.cancel();
+      response.writeHead(502, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+      });
+      response.end(JSON.stringify({
+        message: 'External RDF vocabulary is unavailable.',
+        upstreamStatus: upstreamResponse.status,
+        url: target,
+      }));
+      return;
+    }
     const responseHeaders = Object.fromEntries(upstreamResponse.headers.entries());
 
     delete responseHeaders['content-encoding'];
     delete responseHeaders['content-length'];
+    responseHeaders['cache-control'] = 'no-store';
     responseHeaders['access-control-allow-origin'] = '*';
     response.writeHead(upstreamResponse.status, responseHeaders);
 

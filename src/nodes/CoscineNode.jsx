@@ -288,6 +288,7 @@ export default function CoscineNode({
         <img src={coscineLogo} alt="" className="coscine-node__icon" />
         <p className="coscine-node__title">{data.label}</p>
       </div>
+      <form onSubmit={(event) => event.preventDefault()}>
       <label className="coscine-node__label">
         <span className="coscine-node__label-heading">
           <span>API token</span>
@@ -321,6 +322,7 @@ export default function CoscineNode({
         />
         Remember token in this browser
       </label>
+      </form>
       {tokenStorageError ? (
         <p className="coscine-node__storage-error">{tokenStorageError}</p>
       ) : null}

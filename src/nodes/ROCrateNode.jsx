@@ -46,7 +46,7 @@ export default function ROCrateNode({ data, selected }) {
 
         if (isActive) {
           setTripleCount(count);
-          setRdfStatus(`Loaded ${count} triple${count === 1 ? '' : 's'}.`);
+          setRdfStatus('');
         }
       } catch (error) {
         if (isActive && error?.name !== 'AbortError') {

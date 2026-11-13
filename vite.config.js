@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { proxyRdfResource } from './rdfProxy.js';
+import { proxyAnnotationRerank } from './annotationRerankProxy.js';
+import { handleGroupAnnotationMemory } from './groupAnnotationMemoryServer.js';
 
 const coscineApiOrigin = 'https://coscine.rwth-aachen.de';
 const aimsApiOrigin = 'https://aims-backend.tools.coscine.dev';
@@ -78,6 +80,14 @@ export default defineConfig({
       name: 'coscine-api-proxy',
       configureServer(server) {
         server.middlewares.use(async (request, response, next) => {
+          if (request.url === '/annotation-rerank' && request.method === 'POST') {
+            await proxyAnnotationRerank(request, response);
+            return;
+          }
+          if (request.url?.startsWith('/annotation-memory/group/')) {
+            await handleGroupAnnotationMemory(request, response);
+            return;
+          }
           if (request.url?.startsWith('/rdf-resource')) {
             await proxyRdfResource(request, response);
             return;

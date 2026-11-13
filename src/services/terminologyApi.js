@@ -13,6 +13,12 @@ function firstText(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function allText(value) {
+  return (Array.isArray(value) ? value : [value])
+    .filter((item) => typeof item === 'string' && item.trim())
+    .map((item) => item.trim());
+}
+
 function normalizeTerm(entity) {
   const types = Array.isArray(entity?.type)
     ? entity.type.filter((type) => type && type !== 'entity')
@@ -22,6 +28,7 @@ function normalizeTerm(entity) {
     iri: firstText(entity?.iri),
     label: firstText(entity?.label) || firstText(entity?.shortForm) || firstText(entity?.iri),
     definition: firstText(entity?.definition),
+    synonyms: [...new Set([...allText(entity?.synonym), ...allText(entity?.synonyms)])],
     ontologyId: firstText(entity?.ontologyId),
     ontologyPrefix:
       firstText(entity?.ontologyPreferredPrefix) || firstText(entity?.ontologyId).toUpperCase(),
@@ -57,6 +64,7 @@ export async function searchTerminologyTerms({
   page = 0,
   limit = DEFAULT_RESULT_LIMIT,
   signal,
+  ontologyId,
 }) {
   const trimmedQuery = String(query ?? '').trim();
 
@@ -74,6 +82,7 @@ export async function searchTerminologyTerms({
   searchUrl.searchParams.set('searchFields', 'label^5 synonym^3 definition');
   searchUrl.searchParams.set('boostFields', 'label^100 curie^50');
   searchUrl.searchParams.set('includeObsoleteEntities', 'false');
+  if (ontologyId) searchUrl.searchParams.set('ontologyId', ontologyId);
 
   const response = await fetch(searchUrl, {
     headers: {
@@ -92,4 +101,27 @@ export async function searchTerminologyTerms({
     terms: normalizeTerms(payload?.elements).map((term) => ({ ...term, language })),
     total: Number(payload?.totalElements) || 0,
   };
+}
+
+/** A complete, bounded ontology snapshot; partial snapshots must not masquerade as retrieval. */
+export async function loadVocabularySnapshot({ ontologyId, signal, maxTerms = 1000 }) {
+  if (!/^[a-z0-9_-]+$/i.test(ontologyId || '')) return null;
+  const terms = [];
+  const pageSize = 100;
+  for (let page = 0; terms.length <= maxTerms; page += 1) {
+    const url = new URL(`${TERMINOLOGY_ENTITIES_URL.replace(/\/entities$/, '')}/ontologies/${encodeURIComponent(ontologyId)}/classes`);
+    url.searchParams.set('page', String(page));
+    url.searchParams.set('size', String(pageSize));
+    const response = await fetch(url, { signal, headers: { Accept: 'application/json' } });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    const batch = normalizeTerms(payload?.elements);
+    if (!Array.isArray(payload?.elements)) return null;
+    terms.push(...batch);
+    if (Number(payload.totalElements) > maxTerms) return null;
+    if (payload.elements.length < pageSize || terms.length >= Number(payload.totalElements)) break;
+  }
+  if (!terms.length || terms.length > maxTerms) return null;
+  const fingerprint = `${ontologyId}:${terms.length}:${terms.map((term) => `${term.iri}|${term.label}|${term.definition}`).join('\n')}`;
+  return { terms, fingerprint };
 }
