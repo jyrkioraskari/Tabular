@@ -88,7 +88,7 @@ export default function UnitNode({ id, data, selected }) {
 
   return (
     <div className={`unit-node${selected ? ' selected' : ''}`}>
-      <NodeHandle type="target" />
+      <NodeHandle type="target" accepts={['Quantity Kinds']} />
       <div className="unit-node__header">
         <img src={qudtAvatar} alt="" className="unit-node__icon" />
         <p className="unit-node__title">{data.label}</p>
@@ -148,7 +148,7 @@ export default function UnitNode({ id, data, selected }) {
       </div>
 
       <NodeInfoButton nodeType="unit" language={data.language} />
-      <NodeHandle type="source" />
+      <NodeHandle type="source" connectsTo={['Column Descriptions']} />
     </div>
   );
 }

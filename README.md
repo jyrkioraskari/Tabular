@@ -1,159 +1,149 @@
-# TabularRDM
+# Tabular
 
-TabularRDM is a React Flow application for building a small tabular research
-data workflow. Users can load spreadsheet data, preview columns, describe those
-columns, create RDF metadata, inspect RDF in a store, and export an RO-Crate ZIP.
+Tabular helps researchers turn familiar CSV and Excel files into documented,
+shareable research outputs. Its visual workflow brings column annotation,
+dataset metadata, RO-Crate packaging, and optional Coscine deposit into one
+place.
 
-![TabulatRDM screen](screen.png)
+![The Tabular workflow canvas](screen2.png)
 
-## Running the App
+## Start Tabular
 
-Install dependencies:
+### Windows
+
+Download `TabularRDM-1.1.0-x64-Portable.exe` from the official
+[Tabular releases page](https://github.com/jyrkioraskari/Tabular/releases)
+and open it. The portable application normally needs neither installation nor
+administrator rights.
+
+### Run from source
+
+Install Node.js 18 or newer, then run:
 
 ```sh
 npm install
-```
-
-Start the Vite development server:
-
-```sh
 npm run dev
 ```
 
-Build the production bundle:
+Open <http://localhost:5173/>.
 
-```sh
-npm run build
-```
+## Tutorial: create your first RO-Crate
 
-Serve the built app with the local Node server:
+The starting canvas already contains a complete basic workflow. Connections
+enter a node on the left and leave it on the right. Hover over an input handle
+to see which node types it accepts.
 
-```sh
-npm run serve
-```
+### 1. Load and check the table
 
-The production server serves files from `dist/` and proxies `/qudt` requests to
-`https://qudt.org` so QUDT vocabulary data can be fetched without browser CORS
-issues.
+In **Tabular file**, choose **Select tabular file** and open a CSV or Excel
+file, or drop the file onto the node. **Preview Tabular Data** shows its headers
+and first rows.
 
-## Main Files
+The app detects likely column headers and rotates a table automatically when
+parameter names run down the first column and numeric measurements run across
+the rows. For files with measurement settings or several header rows before the
+data, the preview starts at the data table and preserves the preceding details
+as separate export sheets. In workbooks that start with a report sheet, the
+preview can select a later measurement sheet.
+Check the preview and use **Table has column headers** or **Advanced options**
+to correct the interpretation when needed.
 
-`package.json`
-: Defines the Vite scripts and runtime dependencies. Important libraries include
-  React, React Flow, xlsx, rdfstore, ro-crate, and jszip.
+### 2. Explain the columns
 
-`server.js`
-: Minimal static file server for the production build. It also provides the
-  `/qudt` proxy used by the QUDT service.
+In **Column Descriptions**, write a precise meaning for each field. For
+example, describe `air_temperature` as “Ambient air temperature at the
+sensor,” rather than repeating the header.
 
-`vite.config.js`
-: Vite configuration for the React app.
+For reusable semantic annotations, drag a concept from **Terminology Service**
+into a description field.
 
-`index.html`
-: Vite HTML entry point.
+### 3. Add quantities and units
 
-`src/main.jsx`
-: Mounts the React application.
+Search **Quantity Kinds** for a measurement type, select it, and inspect the
+matching entries in **Units**. Drag the correct unit into the relevant column.
+Leave identifiers and genuinely unitless values empty.
 
-`src/App.jsx`
-: Main workflow canvas. It defines node templates, connection behavior, data
-  propagation between nodes, spreadsheet parsing, RDF propagation, and RO-Crate
-  input propagation.
+### 4. Describe the dataset
 
-`src/styles.css`
-: Application-wide styles for the canvas, sidebar, and custom node UI.
+Complete **Metadata Form**, including every required field. Valid metadata
+is passed on automatically.
+This metadata describes the dataset as a whole; column descriptions explain
+its individual fields.
 
-## Node Files
+To keep your work across browser sessions, enable **Remember typed metadata in
+this browser** and **Remember column annotations in this browser** in their
+respective nodes. These options save local browser copies only. Uncheck
+**Remember column annotations in this browser** to delete that node copy and
+its remembered choices. Metadata Form has its own delete control.
 
-`src/nodes/TabularFileNode.jsx`
-: File input node. Reads a selected CSV or spreadsheet file as an ArrayBuffer and
-  passes it to `App.jsx`.
+### 5. Download the package
 
-`src/nodes/PreviewTabularDataNode.jsx`
-: Displays a preview table for the connected tabular file.
-
-`src/nodes/ColumnDescriptionNode.jsx`
-: Lets users enter descriptions for detected columns. Units are assigned only by
-  dragging a unit from the Units node. Changes are serialized to RDF
-  automatically; there is no manual save button.
-
-`src/nodes/QuantityKindNode.jsx`
-: Lets users search and select QUDT quantity kinds.
-
-`src/nodes/UnitNode.jsx`
-: Lets users search QUDT units, filtered by a selected quantity kind when
-  connected. Unit selections can be dragged into Column Description unit fields.
-
-`src/nodes/MetadataProfileSearchNode.jsx`
-: Searches AIMS metadata profiles and passes selected profile information to a
-  connected Metadata Form node.
-
-`src/nodes/MetadataFormNode.jsx`
-: Wraps the SHACL form web component. It loads default metadata shapes or shapes
-  from a selected AIMS profile and emits serialized RDF when the form is saved.
-
-`src/nodes/RDFStoreNode.jsx`
-: Loads connected Turtle RDF into rdfstore-js, shows triple counts, previews the
-  loaded Turtle, and allows downloading `metadata.ttl`.
-
-`src/nodes/ROCrateNode.jsx`
-: Creates an RO-Crate ZIP using ro-crate and jszip. It includes `data.json` from
-  connected RDF content, CSV exports for connected spreadsheet sheets under
-  `original_data/`, and `ro-crate-metadata.json`.
-
-## Service Files
-
-`src/services/aimsApi.js`
-: Fetches and normalizes AIMS application profile data.
-
-`src/services/columnDescriptionRdf.js`
-: Serializes column description fields into Turtle RDF.
-
-`src/services/metadataShapesService.js`
-: Loads metadata shape definitions, using a worker when available.
-
-`src/services/metadataShapes.worker.js`
-: Worker implementation for metadata shape processing.
-
-`src/services/qudtService.js`
-: Fetches and normalizes QUDT quantity kind and unit data.
-
-## RO-Crate Export Flow
-
-1. Load a spreadsheet with a Tabular File node.
-2. Connect it to downstream tabular nodes and to an RO-Crate node if sheet CSVs
-   should be included.
-3. Create RDF by connecting Metadata Form, Column Description, or RDF Store
-   output into the RO-Crate node.
-4. Press Download on the RO-Crate node.
-
-If the loaded workbook contains a sheet named `export_config`, the RO-Crate node
-reads rows from that sheet to derive:
+The **RO-Crate** node combines the data and descriptions. When it reports
+loaded RDF triples, choose a dataset licence or **Unspecified**, then choose
+**Download RO-Crate**. An `export_config` worksheet can provide the licence
+instead.
 
 ```text
-dataset_id
-dataset_name
-dataset_title
-dataset_label
-title
-dataset_description
-description
-license
+Tabular file ──┬──> Preview Tabular Data
+               ├──> Column Descriptions ──┐
+               └───────────────────────────┼──> RO-Crate ZIP
+Metadata Form ─────────────────────────────┘
 ```
 
-The exported ZIP name is based on `dataset_id`, `dataset_name`, or `dataset`.
-The crate title falls back through `dataset_title`, `dataset_label`, `title`, and
-the derived dataset id.
+The ZIP contains the tabular data, RDF metadata, and a standard RO-Crate
+catalogue. Keep it intact when sharing or archiving it.
 
-## RWTH Coscine Integration
+## Optional: deposit in Coscine
 
-![TabulatRDM screen](screen2.png)
+Add a **Coscine** node and connect **RO-Crate → Coscine**. Tabular
+automatically connects the matching Metadata Form—or creates one when needed—
+so the selected Coscine resource can provide its metadata requirements.
 
-## Notes
+Enter an API token, load and select a writable resource, complete and save the
+resulting form, then choose **Upload RO-Crate**. Nothing is uploaded before
+that final action.
 
-`npm run build` may show a Vite warning about chunks larger than 500 kB. This is
-expected because libraries such as rdfstore, xlsx, ro-crate, and jszip are large.
-The warning is not a build failure.
+![A Tabular workflow connected to Coscine](screen.png)
+
+## Optional: write a node in Python
+
+Drag **Python script** onto the canvas, connect any node to it, and write a
+`run(inputs, data)` function that returns a JSON value — for example a summary
+of the connected column descriptions. The code runs as a Python 3 subprocess of
+the local application server (desktop app, `npm run serve`, or `npm run dev`),
+so Python 3 must be installed. Code from imported workflow files is never run automatically. See
+[Python nodes](docs/python-nodes.md).
+
+## Optional: use an n8n community node
+
+Add **n8n community node** from the palette and connect a Tabular node to it.
+Configure its name, package, and a webhook from your n8n workflow, then inspect
+**Data to send** and choose **Run**. The community package runs in your n8n
+instance; its result appears in the Tabular node and can feed another n8n node
+or a Python script. See [n8n community nodes](docs/n8n-community-nodes.md).
+
+## Optional: share a workflow
+
+Use **Export workflow as JSON** in the sidebar to save the canvas as a plain
+JSON file. The file contains node settings and entered text, never the loaded
+spreadsheet data. **Import JSON…** adds such a file back onto the canvas.
+See [Use the canvas and connections](docs/interface.md).
+
+## Learn more
+
+Use the [documentation guide](docs/README.md) to continue with short,
+task-focused pages:
+
+- [Why Tabular connects these services](docs/why-tabular.md)
+- [Describe columns with terminology, quantities, and units](docs/semantic-columns.md)
+- [Prepare data and understand the RO-Crate](docs/data-and-ro-crate.md)
+- [Deposit an RO-Crate in Coscine](docs/coscine.md)
+- [Use the canvas and connections](docs/interface.md)
+- [Troubleshoot safely](docs/troubleshooting.md)
+- [Develop and build Tabular](docs/development.md)
+- [Understand and extend column annotations](docs/column-annotation-developer-guide.md)
+
+Each workflow node also has an `i` button with instructions for that step.
 
 <p align="right">
   <img src="src/assets/nfdi4ing_24.svg" alt="NFDI4Ing" width="220">

@@ -1,7 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { proxyRdfResource } from './rdfProxy.js';
+import { proxyAnnotationRerank } from './annotationRerankProxy.js';
+import { handleGroupAnnotationMemory } from './groupAnnotationMemoryServer.js';
+import { handleN8nNodeRun, N8N_NODE_RUN_PATH } from './n8nNodeServer.js';
+import { handlePythonNodeRun, PYTHON_NODE_RUN_PATH } from './pythonNodeServer.js';
 
 const coscineApiOrigin = 'https://coscine.rwth-aachen.de';
+const aimsApiOrigin = 'https://aims-backend.tools.coscine.dev';
 
 async function readRequestBody(request) {
   const chunks = [];
@@ -76,6 +82,27 @@ export default defineConfig({
       name: 'coscine-api-proxy',
       configureServer(server) {
         server.middlewares.use(async (request, response, next) => {
+          if (request.url === '/annotation-rerank' && request.method === 'POST') {
+            await proxyAnnotationRerank(request, response);
+            return;
+          }
+          if (request.url?.startsWith('/annotation-memory/group/')) {
+            await handleGroupAnnotationMemory(request, response);
+            return;
+          }
+          if (request.url === N8N_NODE_RUN_PATH) {
+            await handleN8nNodeRun(request, response);
+            return;
+          }
+          if (request.url === PYTHON_NODE_RUN_PATH && request.method === 'POST') {
+            await handlePythonNodeRun(request, response);
+            return;
+          }
+          if (request.url?.startsWith('/rdf-resource')) {
+            await proxyRdfResource(request, response);
+            return;
+          }
+
           if (!request.url?.startsWith('/coscine-api')) {
             next();
             return;
@@ -87,7 +114,21 @@ export default defineConfig({
     },
   ],
   server: {
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+    hmr: {
+      protocol: 'ws',
+      host: '127.0.0.1',
+      port: 5173,
+      clientPort: 5173,
+    },
     proxy: {
+      '/aims-api': {
+        target: aimsApiOrigin,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/aims-api/, ''),
+      },
       '/qudt': {
         target: 'https://qudt.org',
         changeOrigin: true,

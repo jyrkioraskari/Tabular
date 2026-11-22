@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+title: Tabular
+type: software
+authors:
+  - given-names: Jyrki
+    family-names: Oraskari
+    orcid: 'https://orcid.org/0000-0002-4723-3878'
+identifiers:
+  - description: The GitHub repository for Tabular.
+    type: url
+    value: https://github.com/jyrkioraskari/Tabular
+repository-code: 'https://github.com/jyrkioraskari/Tabular'
+abstract: >-
+  Tabular helps researchers turn familiar CSV and Excel
+  files into documented, shareable research outputs. Its
+  visual workflow brings column annotation, dataset
+  metadata, RO-Crate packaging, and optional Coscine
+  deposit into one place.
+keywords:
+  - research data management
+  - RO-Crate
+  - metadata
+  - tabular data
+  - Coscine
+license: MIT
+version: 1.1.0
+date-released: '2026-10-07'

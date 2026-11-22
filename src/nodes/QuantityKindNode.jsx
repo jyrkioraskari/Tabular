@@ -18,7 +18,6 @@ function capitalizeInitial(value) {
 
 export default function QuantityKindNode({ id, data, selected, onQuantityKindSelect }) {
   const [quantityKinds, setQuantityKinds] = useState([]);
-  const [selectedQuantityKind, setSelectedQuantityKind] = useState(null);
   const language = data.language ?? 'en';
   const [filterText, setFilterText] = useState('');
   const [status, setStatus] = useState('Loading quantity kinds...');
@@ -35,11 +34,10 @@ export default function QuantityKindNode({ id, data, selected, onQuantityKindSel
 
     return quantityKind.label.toLocaleLowerCase().includes(normalizedFilterText);
   });
-  const selectedQuantityKindKey = selectedQuantityKind?.qk || '';
+  const selectedQuantityKindKey = data.selectedQuantityKind?.qk || '';
 
   const selectQuantityKind = useCallback(
     (quantityKind) => {
-      setSelectedQuantityKind(quantityKind);
       onQuantityKindSelect?.(id, quantityKind);
     },
     [id, onQuantityKindSelect],
@@ -77,24 +75,6 @@ export default function QuantityKindNode({ id, data, selected, onQuantityKindSel
     };
   }, [data.limit, data.offset]);
 
-  useEffect(() => {
-    if (visibleQuantityKinds.length === 0) {
-      if (selectedQuantityKind) {
-        selectQuantityKind(null);
-      }
-
-      return;
-    }
-
-    const selectedIsVisible = visibleQuantityKinds.some(
-      (quantityKind) => quantityKind.qk === selectedQuantityKindKey,
-    );
-
-    if (!selectedIsVisible) {
-      selectQuantityKind(visibleQuantityKinds[0]);
-    }
-  }, [selectQuantityKind, selectedQuantityKind, selectedQuantityKindKey, visibleQuantityKinds]);
-
   return (
     <div className={`quantity-kind-node${selected ? ' selected' : ''}`}>
       <NodeHandle type="target" />
@@ -114,6 +94,11 @@ export default function QuantityKindNode({ id, data, selected, onQuantityKindSel
       />
 
       {status ? <p className="quantity-kind-node__status">{status}</p> : null}
+      {data.selectedQuantityKind ? (
+        <p className="quantity-kind-node__status">
+          Selected: {capitalizeInitial(data.selectedQuantityKind.label)}
+        </p>
+      ) : null}
       {error ? <p className="quantity-kind-node__error">{error}</p> : null}
 
       <div className="quantity-kind-node__results nowheel">
@@ -139,7 +124,7 @@ export default function QuantityKindNode({ id, data, selected, onQuantityKindSel
       </div>
 
       <NodeInfoButton nodeType="quantityKind" language={data.language} />
-      <NodeHandle type="source" />
+      <NodeHandle type="source" connectsTo={['Units']} />
     </div>
   );
 }

@@ -13,7 +13,7 @@ export default function PreviewTabularDataNode({ data, selected }) {
 
   return (
     <div className={`preview-tabular-data-node${selected ? ' selected' : ''}`}>
-      <NodeHandle type="target" />
+      <NodeHandle type="target" accepts={['Tabular file']} />
       <div className="preview-tabular-data-node__header">
         <img src={spreadsheetIcon} alt="" className="preview-tabular-data-node__icon" />
         <p className="preview-tabular-data-node__title">{data.label}</p>
@@ -45,7 +45,6 @@ export default function PreviewTabularDataNode({ data, selected }) {
       )}
 
       <NodeInfoButton nodeType="previewTabular" language={data.language} />
-      <NodeHandle type="source" />
     </div>
   );
 }

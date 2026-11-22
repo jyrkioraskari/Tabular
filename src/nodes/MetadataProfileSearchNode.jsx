@@ -28,6 +28,7 @@ export default function MetadataProfileSearchNode({ id, data, selected, onProfil
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProfileBaseUri, setSelectedProfileBaseUri] = useState('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const isInvalidated = data.invalidated === true;
 
   const runSearch = useCallback(async (query) => {
     const trimmedQuery = query.trim();
@@ -87,6 +88,11 @@ export default function MetadataProfileSearchNode({ id, data, selected, onProfil
 
   const handleProfileSelect = useCallback(
     async (profile) => {
+      if (isInvalidated) {
+        setError('Inactive: the connected Coscine resource supplies this metadata form profile.');
+        return;
+      }
+
       const baseUri = getProfileBaseUri(profile);
 
       setSelectedProfileBaseUri(baseUri);
@@ -101,7 +107,7 @@ export default function MetadataProfileSearchNode({ id, data, selected, onProfil
         setIsLoadingProfile(false);
       }
     },
-    [id, onProfileSelect],
+    [id, isInvalidated, onProfileSelect],
   );
 
   useEffect(
@@ -136,7 +142,7 @@ export default function MetadataProfileSearchNode({ id, data, selected, onProfil
   }, [runSearch, searchText]);
 
   return (
-    <div className={`profile-search-node${selected ? ' selected' : ''}`}>
+    <div className={`profile-search-node${selected ? ' selected' : ''}${isInvalidated ? ' invalidated' : ''}`}>
       <NodeHandle type="target" />
       <div className="profile-search-node__header">
         <img src={aimsIcon} alt="" className="profile-search-node__icon" />
@@ -167,6 +173,11 @@ export default function MetadataProfileSearchNode({ id, data, selected, onProfil
       </form>
 
       {status ? <p className="profile-search-node__status">{status}</p> : null}
+      {isInvalidated ? (
+        <p className="profile-search-node__invalidated">
+          Inactive while Coscine supplies the connected Metadata Form profile.
+        </p>
+      ) : null}
       {error ? <p className="profile-search-node__error">{error}</p> : null}
 
       <div className="profile-search-node__results nowheel">
@@ -183,7 +194,7 @@ export default function MetadataProfileSearchNode({ id, data, selected, onProfil
                     className={`profile-search-node__result-button${
                       isSelected ? ' selected' : ''
                     }`}
-                    disabled={isLoadingProfile}
+                    disabled={isLoadingProfile || isInvalidated}
                     title={baseUri || undefined}
                     onClick={() => handleProfileSelect(profile)}
                   >
@@ -199,7 +210,7 @@ export default function MetadataProfileSearchNode({ id, data, selected, onProfil
       </div>
 
       <NodeInfoButton nodeType="profileSearch" language={data.language} />
-      <NodeHandle type="source" />
+      <NodeHandle type="source" connectsTo={['Metadata Form']} />
     </div>
   );
 }

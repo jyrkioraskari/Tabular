@@ -1,9 +1,9 @@
 /**
  * RDF serialization helpers for ColumnDescriptionNode. The exported serializer
- * turns column headers, descriptions, and QUDT units into Turtle resources that
- * downstream RDF Store and RO-Crate nodes can consume.
+ * turns column headers, terminology concepts, descriptions, and QUDT units
+ * into Turtle resources that downstream RDF Store and RO-Crate nodes consume.
  */
-const TABULAR_PREFIX = 'https://nfdi4ing.de/tabular/';
+const COLUMN_RESOURCE_PREFIX = 'https://example.org/tabular/column/';
 const QUDT_UNIT_PREFIX = 'http://qudt.org/vocab/unit/';
 
 function escapeTurtleString(value) {
@@ -25,7 +25,24 @@ function toColumnDescriptionId(header, index) {
 }
 
 function isAbsoluteIri(value) {
-  return /^[a-z][a-z0-9+.-]*:/i.test(value);
+  return (
+    /^[a-z][a-z0-9+.-]*:/i.test(value) &&
+    !/[\s<>"{}|^`\\]/.test(value)
+  );
+}
+
+function toResourceIri(value) {
+  const candidate = String(value || '').trim();
+  return candidate && isAbsoluteIri(candidate) ? candidate : '';
+}
+
+function toLabelLiteral(value, language) {
+  const escapedValue = escapeTurtleString(value);
+  const normalizedLanguage = String(language || '').trim().toLowerCase();
+
+  return /^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(normalizedLanguage)
+    ? `"${escapedValue}"@${normalizedLanguage}`
+    : `"${escapedValue}"^^xsd:string`;
 }
 
 function toUnitIri(field) {
@@ -35,8 +52,10 @@ function toUnitIri(field) {
     return '';
   }
 
-  if (isAbsoluteIri(candidate)) {
-    return candidate;
+  const absoluteIri = toResourceIri(candidate);
+
+  if (absoluteIri) {
+    return absoluteIri;
   }
 
   const compactQudtUnit = candidate.match(/^qudtunit:([A-Za-z][A-Za-z0-9_-]*)$/);
@@ -51,39 +70,66 @@ function toUnitIri(field) {
 /**
  * Converts column-description form fields into Turtle consumed by RDF Store and
  * RO-Crate nodes. Empty descriptions are omitted, but every detected header is
- * still represented as a ColumnDataDescription resource.
+ * still represented as a W3C CSVW Column resource.
  */
 export function serializeColumnDescriptionsToTurtle(fields) {
   const rows = Array.isArray(fields) ? fields : [];
+  const resourceLabels = new Map();
   const triples = rows
     .map((field, index) => {
       const header = String(field.header || `Column ${index + 1}`).trim();
       const description = String(field.description || '').trim();
+      const descriptionIri = toResourceIri(field.descriptionUri);
       const unitIri = toUnitIri(field);
       const predicates = [
-        '  a tab:ColumnDataDescription',
-        `  tab:column_name "${escapeTurtleString(header)}"^^xsd:string`,
+        '  a csvw:Column',
+        `  csvw:name "${escapeTurtleString(header)}"^^xsd:string`,
       ];
 
       if (description) {
         predicates.push(
-          `  tab:column_description "${escapeTurtleString(description)}"^^xsd:string`,
+          `  dcterms:description "${escapeTurtleString(description)}"^^xsd:string`,
         );
       }
 
-      if (unitIri) {
-        predicates.push(`  tab:unit <${unitIri}>`);
+      if (descriptionIri) {
+        predicates.push(
+          `  csvw:propertyUrl "${escapeTurtleString(descriptionIri)}"^^csvw:uriTemplate`,
+        );
+
+        if (description) {
+          resourceLabels.set(
+            `${descriptionIri}\n${description}\n${field.descriptionLanguage || ''}`,
+            `<${descriptionIri}> rdfs:label ${toLabelLiteral(
+              description,
+              field.descriptionLanguage,
+            )} .`,
+          );
+        }
       }
 
-      return `<${TABULAR_PREFIX}column-description/${toColumnDescriptionId(header, index)}-${index + 1}>\n${predicates.join(' ;\n')} .`;
+      if (unitIri) {
+        predicates.push(`  sdmx-attribute:unitMeasure <${unitIri}>`);
+
+        const unitLabel = String(field.unit || '').trim();
+
+        if (unitLabel) {
+          resourceLabels.set(
+            `${unitIri}\n${unitLabel}\n${field.unitLanguage || ''}`,
+            `<${unitIri}> rdfs:label ${toLabelLiteral(unitLabel, field.unitLanguage)} .`,
+          );
+        }
+      }
+
+      return `<${COLUMN_RESOURCE_PREFIX}${toColumnDescriptionId(header, index)}-${index + 1}>\n${predicates.join(' ;\n')} .`;
     });
 
-  return `@prefix tab: <https://nfdi4ing.de/tabular/> .
+  return `@prefix csvw: <http://www.w3.org/ns/csvw#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix sdmx-attribute: <http://purl.org/linked-data/sdmx/2009/attribute#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix qudtunit: <http://qudt.org/vocab/unit/> .
 
-${triples.join('\n\n')}
+${[...triples, ...resourceLabels.values()].join('\n\n')}
 `;
 }

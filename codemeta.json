@@ -1,0 +1,41 @@
+{
+  "@context": "https://w3id.org/codemeta/v3",
+  "@type": "SoftwareSourceCode",
+  "name": "Tabular",
+  "description": "Tabular helps researchers turn familiar CSV and Excel files into documented, shareable research outputs. Its visual workflow brings column annotation, dataset metadata, RO-Crate packaging, and optional Coscine deposit into one place.",
+  "identifier": "https://github.com/jyrkioraskari/Tabular",
+  "codeRepository": "https://github.com/jyrkioraskari/Tabular",
+  "author": [
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0002-4723-3878",
+      "givenName": "Jyrki",
+      "familyName": "Oraskari"
+    }
+  ],
+  "license": [
+    "https://spdx.org/licenses/MIT"
+  ],
+  "version": "1.1.0",
+  "datePublished": "2026-10-07",
+  "dateModified": "2026-10-07",
+  "keywords": [
+    "research data management",
+    "RO-Crate",
+    "metadata",
+    "tabular data",
+    "Coscine"
+  ],
+  "programmingLanguage": [
+    "JavaScript"
+  ],
+  "runtimePlatform": "Node.js",
+  "applicationCategory": "Research Data Management",
+  "operatingSystem": "Windows",
+  "softwareRequirements": "Node.js >= 18",
+  "developmentStatus": "active",
+  "relatedLink": [
+    "https://github.com/jyrkioraskari/Tabular/releases"
+  ],
+  "readme": "https://github.com/jyrkioraskari/Tabular/blob/main/README.md"
+}

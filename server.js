@@ -2,11 +2,18 @@ import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { proxyRdfResource } from './rdfProxy.js';
+import { proxyAnnotationRerank } from './annotationRerankProxy.js';
+import { handleGroupAnnotationMemory } from './groupAnnotationMemoryServer.js';
+import { handlePythonNodeRun, PYTHON_NODE_RUN_PATH } from './pythonNodeServer.js';
+import { handleN8nNodeRun, N8N_NODE_RUN_PATH } from './n8nNodeServer.js';
 
-const port = Number(process.env.PORT) || 4173;
-const distDir = resolve('dist');
+const defaultPort = Number(process.env.PORT) || 4173;
+const distDir = resolve(fileURLToPath(new URL('./dist', import.meta.url)));
 const qudtOrigin = 'https://qudt.org';
 const coscineApiOrigin = 'https://coscine.rwth-aachen.de';
+const aimsApiOrigin = 'https://aims-backend.tools.coscine.dev';
 
 const contentTypes = new Map([
   ['.css', 'text/css; charset=utf-8'],
@@ -64,6 +71,31 @@ async function proxyQudt(request, response) {
   const upstreamResponse = await fetch(targetUrl, {
     headers: {
       Accept: request.headers.accept || 'text/turtle, */*;q=0.1',
+    },
+  });
+  const headers = Object.fromEntries(upstreamResponse.headers.entries());
+
+  delete headers['content-encoding'];
+  delete headers['content-length'];
+  headers['access-control-allow-origin'] = '*';
+
+  response.writeHead(upstreamResponse.status, headers);
+
+  if (upstreamResponse.body) {
+    for await (const chunk of upstreamResponse.body) {
+      response.write(chunk);
+    }
+  }
+
+  response.end();
+}
+
+async function proxyAims(request, response) {
+  const targetPath = request.url.replace(/^\/aims-api/, '') || '/';
+  const targetUrl = new URL(targetPath, aimsApiOrigin);
+  const upstreamResponse = await fetch(targetUrl, {
+    headers: {
+      Accept: request.headers.accept || 'application/json',
     },
   });
   const headers = Object.fromEntries(upstreamResponse.headers.entries());
@@ -145,24 +177,80 @@ async function serveStatic(request, response) {
   }
 }
 
-const server = createServer(async (request, response) => {
-  try {
-    if (request.url.startsWith('/qudt')) {
-      await proxyQudt(request, response);
-      return;
+export function createTabularRdmServer() {
+  return createServer(async (request, response) => {
+    try {
+      if (request.url === '/annotation-rerank' && request.method === 'POST') {
+        await proxyAnnotationRerank(request, response);
+        return;
+      }
+      if (request.url.startsWith('/annotation-memory/group/')) {
+        await handleGroupAnnotationMemory(request, response);
+        return;
+      }
+      if (request.url.startsWith(PYTHON_NODE_RUN_PATH) && request.method === 'POST') {
+        await handlePythonNodeRun(request, response);
+        return;
+      }
+      if (request.url === N8N_NODE_RUN_PATH) {
+        await handleN8nNodeRun(request, response);
+        return;
+      }
+      if (request.url.startsWith('/rdf-resource')) {
+        await proxyRdfResource(request, response);
+        return;
+      }
+
+      if (request.url.startsWith('/aims-api')) {
+        await proxyAims(request, response);
+        return;
+      }
+
+      if (request.url.startsWith('/qudt')) {
+        await proxyQudt(request, response);
+        return;
+      }
+
+      if (request.url.startsWith('/coscine-api')) {
+        await proxyCoscine(request, response);
+        return;
+      }
+
+      await serveStatic(request, response);
+    } catch (error) {
+      send(response, 502, error?.message || 'Proxy request failed.');
     }
+  });
+}
 
-    if (request.url.startsWith('/coscine-api')) {
-      await proxyCoscine(request, response);
-      return;
-    }
+export function startTabularRdmServer({ port = defaultPort, host = '127.0.0.1' } = {}) {
+  const server = createTabularRdmServer();
 
-    await serveStatic(request, response);
-  } catch (error) {
-    send(response, 502, error?.message || 'Proxy request failed.');
-  }
-});
+  return new Promise((resolveStart, rejectStart) => {
+    const handleError = (error) => {
+      rejectStart(error);
+    };
 
-server.listen(port, () => {
-  console.log(`TabulatRDM server listening on http://localhost:${port}`);
-});
+    server.once('error', handleError);
+    server.listen(port, host, () => {
+      server.off('error', handleError);
+      const address = server.address();
+      const selectedPort = typeof address === 'object' && address ? address.port : port;
+
+      resolveStart({
+        server,
+        url: `http://${host}:${selectedPort}`,
+      });
+    });
+  });
+}
+
+const isCommandLineEntry = process.argv[1]
+  ? resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+  : false;
+
+if (isCommandLineEntry) {
+  startTabularRdmServer().then(({ url }) => {
+    console.log(`TabularRDM server listening on ${url}`);
+  });
+}
