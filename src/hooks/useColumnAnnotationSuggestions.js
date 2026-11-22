@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { suggestMeanings } from '../services/annotationSuggestions';
 import { suggestUnit } from '../services/annotationUnits';
+<<<<<<< HEAD
 import { annotationInputFingerprint, buildColumnAnnotationQuery, canRetrieveDescriptionMeaning } from '../services/columnAnnotationQuery';
+=======
+import { annotationInputFingerprint, buildColumnAnnotationQuery } from '../services/columnAnnotationQuery';
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
 const AUTO_DELAY_MS = 650;
 
@@ -53,11 +57,19 @@ export function useColumnAnnotationSuggestions({
       for (let index = 0; index < fields.length; index += 1) {
         const field = fields[index];
         const query = buildColumnAnnotationQuery(fields, index, sheetName);
+<<<<<<< HEAD
         if (!query.description.trim()) continue;
 
         // A failure in one provider must not hide a usable result from the other.
         const [meaningResult, unitResult] = await Promise.allSettled([
           canRetrieveDescriptionMeaning(query, hasTerminologyInput, vocabularyId)
+=======
+        if (!query.description.trim() && !query.header.trim()) continue;
+
+        // A failure in one provider must not hide a usable result from the other.
+        const [meaningResult, unitResult] = await Promise.allSettled([
+          hasTerminologyInput && vocabularyId && !field.descriptionUri
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
             ? suggestMeaning(query, { ontologyId: vocabularyId, language, signal: controller.signal })
             : Promise.resolve({ candidates: [], source: 'none', ambiguous: false }),
           field.unitUri
@@ -72,10 +84,16 @@ export function useColumnAnnotationSuggestions({
         const unit = unitResult.status === 'fulfilled' ? unitResult.value : null;
         const failed = [meaningResult, unitResult].find((result) => result.status === 'rejected');
         if (failed) setError(failed.reason?.message || 'Could not generate some annotations. Retry.');
+<<<<<<< HEAD
         setReview((current) => ({ ...current, [index]: {
           meaning, unit, description: field.description, inputKey: requestInputKey,
           error: meaningResult.status === 'rejected' ? (meaningResult.reason?.message || 'Glossary retrieval failed.') : '',
         } }));
+=======
+        if (meaning.candidates?.length || unit) {
+          setReview((current) => ({ ...current, [index]: { meaning, unit, description: field.description, inputKey: requestInputKey } }));
+        }
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       }
     } catch (requestError) {
       if (requestError?.name !== 'AbortError' && epoch === requestRef.current.epoch) {

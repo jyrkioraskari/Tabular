@@ -47,12 +47,19 @@ export async function retrieveCandidates(query, { ontologyId, cutoff = DEFAULT_R
 }
 
 export async function suggestMeanings(query, options = {}) {
+<<<<<<< HEAD
   if (!String(query.description || '').trim()) return { candidates: [], source: 'no description', ambiguous: false };
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   const retrieval = await retrieveCandidates(query, options);
   if (!retrieval.candidates.length) return { ...retrieval, candidates: [], ambiguous: false };
   const rerank = options.rerank || rerankCandidates;
   const result = await rerank(query, retrieval.candidates, { signal: options.signal });
+<<<<<<< HEAD
   return { ...retrieval, candidates: result.ranked.slice(0, 3), ambiguous: result.ambiguous };
+=======
+  return { ...retrieval, candidates: result.ranked.filter((term) => term.supported).slice(0, 3), ambiguous: result.ambiguous };
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 }
 
 /** Deterministic baseline for evaluation and when no model is configured. */

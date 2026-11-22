@@ -48,6 +48,7 @@ function getEffectiveColumnCount(row) {
   return 0;
 }
 
+<<<<<<< HEAD
 function uniqueColumnKeys(headers) {
   const reserved = new Set(headers);
   const used = new Set();
@@ -67,6 +68,8 @@ function uniqueColumnKeys(headers) {
   });
 }
 
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 function readWorksheetRows(worksheet, transpose = false, skipRows = 0) {
   const rows = XLSX.utils.sheet_to_json(worksheet, {
     header: 1,
@@ -186,6 +189,7 @@ export function parseTabularWorkbook(
   const sheets = analyzedSheets.flatMap((sheet) => {
     const { name, rawRows, tableRows, headers, firstDataRow, parameterRowCount, layeredHeaders } = sheet;
 
+<<<<<<< HEAD
     const columnKeys = uniqueColumnKeys(headers);
     const dataSheet = {
       name,
@@ -194,6 +198,14 @@ export function parseTabularWorkbook(
       rows: tableRows.slice(firstDataRow).map((row) =>
         Object.fromEntries(
           columnKeys.map((key, index) => [key, normalizeCellValue(row[index])]),
+=======
+    const dataSheet = {
+      name,
+      headers,
+      rows: tableRows.slice(firstDataRow).map((row) =>
+        Object.fromEntries(
+          headers.map((header, index) => [header, normalizeCellValue(row[index])]),
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
         ),
       ),
     };

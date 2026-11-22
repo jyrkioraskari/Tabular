@@ -41,6 +41,7 @@ test('creates valid-shaped CSVW metadata with stable unique column names', () =>
   );
 });
 
+<<<<<<< HEAD
 test('accepted E_mod identifier exports alongside unchanged measurement values', async () => {
   const sheet = { name: 'Measurements', headers: ['E_mod'], rows: [{ E_mod: '210' }, { E_mod: '205' }] };
   const identifier = 'https://example.org/materials/young-modulus';
@@ -61,6 +62,8 @@ test('accepted E_mod identifier exports alongside unchanged measurement values',
   assert.match(csv, /205/);
 });
 
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 test('packages discoverable CSVW metadata and links it from RO-Crate', async () => {
   const { blob } = await createROCratePackage({
     jsonLdContent: { jsonLd: '@prefix ex: <https://example.org/> .\nex:s ex:p ex:o .\n' },
@@ -87,7 +90,10 @@ test('packages discoverable CSVW metadata and links it from RO-Crate', async () 
       },
     ],
     columnDescriptions: [{ header: 'Time', description: 'Elapsed time' }],
+<<<<<<< HEAD
     datasetLicense: 'CC BY 4.0',
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   });
   const zip = await JSZip.loadAsync(await blob.arrayBuffer());
   const csvwPath = 'original_data/measurements.csv-metadata.json';
@@ -138,6 +144,7 @@ test('packages discoverable CSVW metadata and links it from RO-Crate', async () 
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   );
 });
+<<<<<<< HEAD
 
 test('exports duplicate headers and annotates the selected sheet by position', async () => {
   const { blob } = await createROCratePackage({
@@ -179,3 +186,5 @@ test('requires a deliberate licence choice when export_config has none', async (
   assert.deepEqual(crate['@graph'].find((entity) => entity['@id'] === './').license,
     { '@id': 'https://creativecommons.org/licenses/by/4.0/' });
 });
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571

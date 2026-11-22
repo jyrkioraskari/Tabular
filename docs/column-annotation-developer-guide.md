@@ -27,6 +27,7 @@ To exercise the server proxy and group memory, start the built application with 
 3. `useColumnAnnotationSuggestions.js` starts requests after a short delay. It cancels obsolete requests and tags each result with an input fingerprint so a late result cannot apply to a new workbook, sheet, vocabulary, or edited column.
 4. `annotationSuggestions.js` retrieves candidates from a bounded vocabulary snapshot using `annotationEmbeddings.js`. If the snapshot is unavailable, it searches the Terminology Service. `annotationReranker.js` reranks the shortlist and validates temporary IDs before resolving URIs.
 5. `annotationUnits.js` resolves only units explicitly present in associated source text against QUDT. `annotationMemory.js` ranks previously applied choices from the browser or group memory.
+<<<<<<< HEAD
 6. `ColumnDescriptionNode.jsx` opens the selected column's comparison beside the editor. `ColumnAnnotationReview.jsx` shows source values, glossary candidates, and the current decision. It never commits a suggestion on its own.
 7. `useColumnAnnotationMemory.js` is the commit path for accepted, manual, and dragged annotations. `ColumnAnnotationMemoryControls.jsx` manages opt-in browser storage.
 
@@ -39,6 +40,18 @@ Selecting a column or viewing a candidate does not change `descriptionUri`. The 
 The semantic score is a cosine similarity, **not a calibrated probability**. `annotationAutoApply.js` and its tests remain for legacy evaluation, but the selected-column review does not call its automatic commit hook. Terminology Service fallback results remain for review.
 
 The old selector remains available for evaluation of prior behavior. Its thresholds do not drive the selected-column review.
+=======
+6. `annotationAutoApply.js` selects strong, unambiguous choices. `useAutoApplyColumnAnnotations.js` batches them into one field commit and remembers when a researcher manually overrides a column.
+7. `useColumnAnnotationMemory.js` is the single commit path for automatic, manual, and dragged annotations. `ColumnAnnotationReview.jsx` displays choices that still need review; `ColumnAnnotationMemoryControls.jsx` manages opt-in storage.
+
+## Automatic application policy
+
+The semantic score is a cosine similarity, **not a calibrated probability**. The current conservative rule applies a meaning only when the source is a semantic vocabulary snapshot, reranking supports exactly one candidate, reranking reports no ambiguity, and its similarity is at least `AUTO_SEMANTIC_SCORE` (`0.72`). Terminology Service fallback results remain for review.
+
+A memory choice can apply when the description or header match is strong and no similarly ranked history item points to a different URI. This includes small spelling differences. Meaning memory stays within the selected vocabulary; conflicting explicit unit symbols are rejected. If a strong semantic result disagrees with memory, both stay for review. A uniquely resolved unit from an explicit source field can apply automatically. If a memory unit conflicts with that explicit unit, neither is applied automatically.
+
+Existing meaning links and unit values are never replaced automatically. An automatic meaning link preserves the researcher's description. An automatic unit changes only the unit fields. The table displays the applied name with **Change**, without an edit field; **Change** opens the editable search control. Dragging a replacement also works. Once a researcher edits or replaces a column's value, automatic application is blocked for that column and annotation kind until the workbook, sheet, vocabulary, or header changes. Remaining uncertain suggestions stay in the review panel.
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
 ## Extend safely
 

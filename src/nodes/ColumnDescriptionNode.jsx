@@ -1,9 +1,17 @@
 /** Column annotation editor. Suggestions and their review live in separate modules. */
+<<<<<<< HEAD
 import { useCallback, useEffect, useRef, useState } from 'react';
+=======
+import { useCallback, useRef } from 'react';
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 import tabularSchemaIcon from '../assets/tabular_schema.png';
 import { useColumnAnnotationSuggestions } from '../hooks/useColumnAnnotationSuggestions';
 import { useAnnotationAutocomplete } from '../hooks/useAnnotationAutocomplete';
 import { useColumnAnnotationMemory } from '../hooks/useColumnAnnotationMemory';
+<<<<<<< HEAD
+=======
+import { useAutoApplyColumnAnnotations } from '../hooks/useAutoApplyColumnAnnotations';
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 import ColumnAnnotationReview from './ColumnAnnotationReview';
 import ColumnAnnotationMemoryControls from './ColumnAnnotationMemoryControls';
 import { findRememberedAnnotations } from '../services/annotationMemory';
@@ -20,6 +28,7 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
   const unitInput = data.unitInput ?? null;
   const language = data.language ?? 'en';
   const vocabularyId = data.selectedVocabularyId || '';
+<<<<<<< HEAD
   const [selectedColumn, setSelectedColumn] = useState(null);
   const [mobileReviewOpen, setMobileReviewOpen] = useState(false);
   const reviewButtonsRef = useRef([]);
@@ -37,6 +46,10 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
     setMobileReviewOpen(false);
     window.requestAnimationFrame(() => reviewButtonsRef.current[selectedColumn]?.focus());
   };
+=======
+  const descriptionInputsRef = useRef([]);
+  const unitInputsRef = useRef([]);
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   const {
     activeField,
     suggestions,
@@ -69,9 +82,21 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
     quantityKind: unitInput?.quantityKindFilter || '',
     language,
   });
+<<<<<<< HEAD
 
   const handleDescriptionChange = useCallback(
     (index, description, descriptionUri = '', descriptionLanguage = '', selectionMeta = {}) => {
+=======
+  const { getAutoApplied, markManual } = useAutoApplyColumnAnnotations({
+    fields, review, reviewFingerprint, memory: availableMemory, vocabularyId, language, localizedUnitLabels,
+    workbookKey: data.workbookKey, sheetName: data.sheetName,
+    commitFields, dismissReviewPart,
+  });
+
+  const handleDescriptionChange = useCallback(
+    (index, description, descriptionUri = '', descriptionLanguage = '', selectionMeta = {}) => {
+      markManual(index, 'meaning');
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       if (description !== fields[index]?.description) invalidateReview();
       const nextFields = fields.map((field, fieldIndex) =>
         fieldIndex === index
@@ -80,33 +105,58 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
       );
       commitFields(nextFields, selectionMeta);
     },
+<<<<<<< HEAD
     [commitFields, fields, invalidateReview],
+=======
+    [commitFields, fields, invalidateReview, markManual],
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   );
 
   const applyMeaning = useCallback((index, candidate) => {
     const field = fields[index];
     if (!field || review[index]?.inputKey !== reviewFingerprint || review[index]?.description !== field.description || (field.descriptionUri && field.descriptionUri === candidate.iri)) return;
+<<<<<<< HEAD
+=======
+    markManual(index, 'meaning');
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     // Preserve the researcher's description; only the concept link changes.
     commitFields(fields.map((item, position) => position === index
       ? { ...item, descriptionUri: candidate.iri, descriptionLanguage: candidate.language || language }
       : item), { meaningLabel: candidate.label });
+<<<<<<< HEAD
   }, [fields, review, reviewFingerprint, commitFields, language]);
+=======
+    dismissReviewPart(index, 'meaning');
+  }, [fields, review, reviewFingerprint, commitFields, language, dismissReviewPart, markManual]);
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
   const applyUnit = useCallback((index, suggestion) => {
     const field = fields[index];
     if (!field || review[index]?.inputKey !== reviewFingerprint || review[index]?.description !== field.description || (field.unitUri && field.unitUri === suggestion.unit.unit)) return;
+<<<<<<< HEAD
+=======
+    markManual(index, 'unit');
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     // Unit application is independent of the meaning proposal.
     commitFields(fields.map((item, position) => position === index
       ? { ...item, unit: suggestion.unit.label, unitUri: suggestion.unit.unit, unitLanguage: suggestion.unit.labelLanguage }
       : item), { unitLabel: suggestion.unit.label });
     dismissReviewPart(index, 'unit');
+<<<<<<< HEAD
   }, [fields, review, reviewFingerprint, commitFields, dismissReviewPart]);
+=======
+  }, [fields, review, reviewFingerprint, commitFields, dismissReviewPart, markManual]);
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
   const applyRemembered = useCallback((index, choice) => {
     const field = fields[index];
     if (!field || (!field.description?.trim() && !field.header?.trim())) return;
     const current = findRememberedAnnotations(field, availableMemory, { vocabularyId });
     if (current[choice.kind]?.uri !== choice.uri) return;
+<<<<<<< HEAD
+=======
+    markManual(index, choice.kind);
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     if (choice.kind === 'meaning') {
       if (field.descriptionUri === choice.uri) return;
       commitFields(fields.map((item, position) => position === index
@@ -120,16 +170,28 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
         : item), { unitLabel: choice.label });
       dismissReviewPart(index, 'unit');
     }
+<<<<<<< HEAD
   }, [availableMemory, commitFields, dismissReviewPart, fields, language, vocabularyId]);
 
   const handleUnitChange = useCallback(
     (index, unit, unitUri = '', unitLanguage = '') => {
+=======
+  }, [availableMemory, commitFields, dismissReviewPart, fields, language, markManual, vocabularyId]);
+
+  const handleUnitChange = useCallback(
+    (index, unit, unitUri = '', unitLanguage = '') => {
+      markManual(index, 'unit');
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       const nextFields = fields.map((field, fieldIndex) =>
         fieldIndex === index ? { ...field, unit, unitUri, unitLanguage } : field,
       );
       commitFields(nextFields);
     },
+<<<<<<< HEAD
     [commitFields, fields],
+=======
+    [commitFields, fields, markManual],
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   );
 
   const applySuggestion = useCallback(
@@ -170,6 +232,17 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
     event.dataTransfer.dropEffect = 'copy';
   }, []);
 
+<<<<<<< HEAD
+=======
+  const changeAutomatic = useCallback((index, kind) => {
+    markManual(index, kind);
+    window.requestAnimationFrame(() => {
+      const inputs = kind === 'meaning' ? descriptionInputsRef : unitInputsRef;
+      inputs.current[index]?.focus();
+    });
+  }, [markManual]);
+
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   const handleDescriptionDrop = useCallback(
     (event, index) => {
       const rawTerm = event.dataTransfer.getData(TERM_DRAG_MIME_TYPE);
@@ -244,7 +317,10 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
         {reviewError ? <p role="alert">{reviewError} <button type="button" onClick={runAnnotationSuggestions}>Retry</button></p> : null}
       </div> : null}
 
+<<<<<<< HEAD
       <div ref={workspaceRef} className={`column-description-node__workspace${mobileReviewOpen ? ' column-description-node__workspace--review' : ''}`}>
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       {hasFields ? (
         <div className={`column-description-node__table-wrap${
           fields.length > 10 ? ' column-description-node__table-wrap--scrollable nodrag nopan nowheel' : ''
@@ -262,14 +338,29 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
               {fields.map((field, index) => (
                 <tr key={`${field.header || 'header'}-${index}`}>
                   <td>{field.header || `Column ${index + 1}`}</td>
+<<<<<<< HEAD
                   <td><button ref={(element) => { reviewButtonsRef.current[index] = element; }} type="button" className="nodrag nopan" aria-label={`Review column ${field.header || index + 1}`} aria-current={selectedColumn === index ? 'true' : undefined} onClick={() => openReview(index)}>Review</button></td>
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
                   <td
                     className="column-description-node__description-cell"
                     onDragOver={handleDropTargetDragOver}
                     onDrop={(event) => handleDescriptionDrop(event, index)}
                   >
+<<<<<<< HEAD
                     <input
                       type="text"
+=======
+                    {getAutoApplied(index, 'meaning') ? (
+                      <div className="column-description-node__resolved nodrag">
+                        {field.description ? <span className="column-description-node__resolved-description">{field.description}</span> : null}
+                        <span title={field.descriptionUri}>{getAutoApplied(index, 'meaning').label}</span>
+                        <button type="button" onClick={() => changeAutomatic(index, 'meaning')}>Change</button>
+                      </div>
+                    ) : <input
+                      type="text"
+                      ref={(element) => { descriptionInputsRef.current[index] = element; }}
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
                       className={`column-description-node__input${
                         field.descriptionUri ? ' column-description-node__linked-input' : ''
                       }`}
@@ -287,17 +378,27 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
                           : 'Type or drag a terminology concept'
                       }
                     />
+                    }
                   </td>
                   <td
                     className="column-description-node__unit-cell"
                     onDragOver={handleDropTargetDragOver}
                     onDrop={(event) => handleUnitDrop(event, index)}
                   >
-                    <input
+                    {getAutoApplied(index, 'unit') ? (
+                      <div className="column-description-node__resolved nodrag">
+                        <span title={field.unitUri}>{getAutoApplied(index, 'unit').label}</span>
+                        <button type="button" onClick={() => changeAutomatic(index, 'unit')}>Change</button>
+                      </div>
+                    ) : <input
                       type="text"
+                      ref={(element) => { unitInputsRef.current[index] = element; }}
                       className="column-description-node__input column-description-node__unit-input"
                       value={field.unit ?? ''}
+<<<<<<< HEAD
                       aria-label={`${field.header || `Column ${index + 1}`} column ${index + 1} unit`}
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
                       onChange={(event) => handleUnitChange(index, event.target.value)}
                       onFocus={() => beginFieldSearch(index, 'unit')}
                       onBlur={closeFieldSearch}
@@ -308,6 +409,7 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
                         'Type to search, or drag a unit'
                       }
                     />
+                    }
                   </td>
                 </tr>
               ))}
@@ -318,6 +420,7 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
         <p className="column-description-node__empty">No headers available</p>
       )}
 
+<<<<<<< HEAD
       {mobileReviewOpen ? <button type="button" className="column-description-node__back nodrag nopan" onClick={closeReview}>Back to columns</button> : null}
       <ColumnAnnotationReview
         selectedIndex={selectedColumn}
@@ -325,6 +428,9 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
         loading={reviewLoading}
         error={reviewError}
         onRetry={runAnnotationSuggestions}
+=======
+      <ColumnAnnotationReview
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
         fields={fields}
         review={review}
         fingerprint={reviewFingerprint}
@@ -335,10 +441,15 @@ export default function ColumnDescriptionNode({ id, data, selected, onFieldsChan
         onApplyRemembered={applyRemembered}
         onApplyMeaning={applyMeaning}
         onApplyUnit={applyUnit}
+<<<<<<< HEAD
         onDismissMeaning={() => { setSelectedColumn(null); closeReview(); }}
         onClearMeaning={(index) => { const next = fields.map((field, position) => position === index ? { ...field, descriptionUri: '', descriptionLanguage: '' } : field); commitFields(next); }}
       />
       </div>
+=======
+        onDismissMeaning={(index) => { markManual(index, 'meaning'); dismissReviewPart(index, 'meaning'); }}
+      />
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
       {activeField &&
       (suggestions.length > 0 || isLoadingSuggestions || suggestionError) ? (

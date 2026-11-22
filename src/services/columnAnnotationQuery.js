@@ -10,10 +10,13 @@ export function buildColumnAnnotationQuery(fields, index, sheetName = '') {
   };
 }
 
+<<<<<<< HEAD
 export function canRetrieveDescriptionMeaning(query, hasTerminologyInput, vocabularyId) {
   return Boolean(hasTerminologyInput && vocabularyId && String(query.description || '').trim());
 }
 
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 /** Fingerprint only inputs that can change a proposal. Applied URIs are excluded. */
 export function annotationInputFingerprint({ fields, workbookKey, sheetName, vocabularyId, language, quantityKind }) {
   return JSON.stringify({

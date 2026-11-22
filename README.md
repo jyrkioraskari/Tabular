@@ -79,9 +79,13 @@ its remembered choices. Metadata Form has its own delete control.
 ### 5. Download the package
 
 The **RO-Crate** node combines the data and descriptions. When it reports
+<<<<<<< HEAD
 loaded RDF triples, choose a dataset licence or **Unspecified**, then choose
 **Download RO-Crate**. An `export_config` worksheet can provide the licence
 instead.
+=======
+loaded RDF triples, choose **Download RO-Crate**.
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
 ```text
 Tabular file ──┬──> Preview Tabular Data
@@ -105,6 +109,7 @@ that final action.
 
 ![A Tabular workflow connected to Coscine](screen.png)
 
+<<<<<<< HEAD
 ## Optional: write a node in Python
 
 Drag **Python script** onto the canvas, connect any node to it, and write a
@@ -129,6 +134,8 @@ JSON file. The file contains node settings and entered text, never the loaded
 spreadsheet data. **Import JSON…** adds such a file back onto the canvas.
 See [Use the canvas and connections](docs/interface.md).
 
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 ## Learn more
 
 Use the [documentation guide](docs/README.md) to continue with short,

@@ -7,9 +7,13 @@ flow.
 
 ## Add and connect nodes
 
+<<<<<<< HEAD
 Choose **Add** followed by a node name in the sidebar to place it near the
 center of the visible canvas. You can also drag a node button to a specific
 position. Entries in **My nodes** work the same way. Each node has:
+=======
+Drag a node button from the sidebar onto the canvas. Each node has:
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
 - an input handle on the left;
 - an output handle on the right; and
@@ -26,15 +30,19 @@ value copy, not a node connection. Connecting **Terminology Service** or
 **Units** to a Column Descriptions node additionally enables type-to-search
 suggestions in its description and unit fields.
 
+<<<<<<< HEAD
 The **Python script** node accepts a connection from any node and runs a
 `run(inputs, data)` function you write, on the local machine. See
 [Python nodes](python-nodes.md).
 
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 Connection labels explain what moves through the workflow, such as **file**,
 **column description**, **unit**, or **metadata**. Animated blue lines are
 active data paths. A red dashed metadata-profile line is inactive because a
 connected Coscine resource currently controls that form.
 
+<<<<<<< HEAD
 ## Share workflows and reuse nodes
 
 The sidebar's **Share and reuse** section exports the canvas as a plain JSON
@@ -52,6 +60,8 @@ to My nodes** stores it under its label. Drag a saved entry onto the canvas to
 recreate the node with its saved settings (the interface language is synced to
 the current one). Hover an entry and choose × to remove it.
 
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 ## Follow the next-steps checklist
 
 The checklist at the top of the canvas tracks the whole workflow: load a file,
@@ -96,4 +106,7 @@ services only where they help:
 ---
 
 [Documentation guide](README.md) · [Quick start](../README.md)
+<<<<<<< HEAD
 
+=======
+>>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
