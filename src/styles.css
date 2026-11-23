@@ -48,14 +48,9 @@ body {
 
 .app-logo {
   display: block;
-<<<<<<< HEAD
   width: 140px;
   height: auto;
   flex: 0 0 auto;
-=======
-  width: 170px;
-  height: auto;
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   pointer-events: none;
 }
 
@@ -290,38 +285,11 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
-<<<<<<< HEAD
   padding: 0 16px 20px;
-=======
-  padding: 12px 16px 20px;
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   border-right: 1px solid rgba(15, 23, 42, 0.08);
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(16px);
   overflow: hidden;
-<<<<<<< HEAD
-=======
-}
-
-.sidebar-header {
-  flex: 0 0 auto;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
-}
-
-.sidebar-header .eyebrow {
-  margin: 8px 0 0;
-}
-
-.sidebar-node-scroll {
-  flex: 1 1 auto;
-  min-height: 0;
-  margin-right: -8px;
-  padding: 0 8px 0 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 }
 
 .sidebar-node-scroll {
@@ -367,7 +335,6 @@ body {
 
 .node-palette {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -444,13 +411,7 @@ body {
 .workflow-templates {
   display: grid;
   gap: 10px;
-<<<<<<< HEAD
   margin-top: 12px;
-=======
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(15, 23, 42, 0.1);
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 }
 
 .workflow-templates h2 {
@@ -460,7 +421,6 @@ body {
 }
 
 .workflow-templates__intro {
-<<<<<<< HEAD
   margin: 0;
   color: #475569;
   font-size: 0.76rem;
@@ -514,8 +474,6 @@ body {
 }
 
 .nodes-section h2 {
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   margin: 0;
   font-size: 0.98rem;
   line-height: 1.2;
@@ -565,57 +523,6 @@ body {
 
 .workflow-template-card__description {
   color: #475569;
-<<<<<<< HEAD
-=======
-  font-size: 0.76rem;
-  line-height: 1.35;
-}
-
-.workflow-template-card {
-  display: grid;
-  gap: 5px;
-  width: 100%;
-  border: 1px solid rgba(37, 99, 235, 0.24);
-  border-radius: 10px;
-  background: linear-gradient(180deg, #ffffff, #eff6ff);
-  padding: 10px;
-  color: #0f172a;
-  font: inherit;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
-}
-
-.workflow-template-card:hover {
-  border-color: rgba(37, 99, 235, 0.62);
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.14);
-  transform: translateY(-1px);
-}
-
-.workflow-template-card__logos {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: #64748b;
-}
-
-.workflow-template-card__logos img {
-  width: 34px;
-  height: 28px;
-  border-radius: 5px;
-  background: #ffffff;
-  object-fit: contain;
-}
-
-.workflow-template-card__title {
-  color: #1e3a8a;
-  font-size: 0.84rem;
-  font-weight: 700;
-}
-
-.workflow-template-card__description {
-  color: #475569;
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   font-size: 0.72rem;
   line-height: 1.35;
 }
@@ -2371,10 +2278,6 @@ body {
 
   .sidebar {
     max-height: 70vh;
-<<<<<<< HEAD
-=======
-    padding-top: 10px;
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     border-right: 0;
     border-bottom: 1px solid rgba(15, 23, 42, 0.08);
   }
@@ -2440,7 +2343,6 @@ body {
 .column-description-node__review-controls input { min-width: 8rem; }
 .column-description-node__review-candidate { border-top: 1px solid #d5dce5; margin-top: 6px; padding-top: 6px; }
 .column-description-node__review p { margin: 4px 0; }
-<<<<<<< HEAD
 
 .column-description-node__workspace {
   display: grid;
@@ -2497,5 +2399,3 @@ body {
   .column-description-node__workspace--review .column-description-node__proposal-scroll { display: block; }
   .column-description-node__workspace--review .column-description-node__back { display: inline-block; margin: 8px; }
 }
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571

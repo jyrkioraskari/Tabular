@@ -13,11 +13,8 @@ specific part of the workflow.
 | clean an input file or inspect the package | [Data and RO-Crate](data-and-ro-crate.md) |
 | send the result to a repository | [Deposit in Coscine](coscine.md) |
 | create and rearrange workflows | [Use the visual workflow](interface.md) |
-<<<<<<< HEAD
 | write custom node behavior in Python | [Python nodes](python-nodes.md) |
 | use an n8n community node on the canvas | [n8n community nodes](n8n-community-nodes.md) |
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 | solve a problem or check data safety | [Troubleshooting and safe use](troubleshooting.md) |
 | run, build, or release the software | [Development and releases](development.md) |
 | understand or extend column annotation code | [Column annotation developer guide](column-annotation-developer-guide.md) |

@@ -1,11 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-<<<<<<< HEAD
 import { retrieveCandidates, suggestMeanings, evaluateAnnotationSuggestions } from '../src/services/annotationSuggestions.js';
 import { canRetrieveDescriptionMeaning } from '../src/services/columnAnnotationQuery.js';
-=======
-import { retrieveCandidates, evaluateAnnotationSuggestions } from '../src/services/annotationSuggestions.js';
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 import { validateRerankResponse } from '../src/services/annotationReranker.js';
 import { localizedUnitRows, suggestUnit } from '../src/services/annotationUnits.js';
 import { serializeColumnDescriptionsToTurtle } from '../src/services/columnDescriptionRdf.js';
@@ -15,14 +11,13 @@ const terms = [
   { iri: 'https://example.org/voltage', label: 'Voltage', definition: 'Electric potential difference', synonyms: [] },
 ];
 
-<<<<<<< HEAD
 test('description retrieval skips blank text and retains contrasting candidates in rerank order', async () => {
   const modulusTerms = [
     { iri: 'https://example.org/young-modulus', label: "Young's modulus", definition: 'Elastic stiffness under tensile loading', ontologyId: 'materials' },
     { iri: 'https://example.org/voltage', label: 'Voltage', definition: 'Electric potential difference', ontologyId: 'electrical' },
   ];
-  assert.equal(canRetrieveDescriptionMeaning({ description: '  ' }, true, 'test'), false);
-  assert.equal(canRetrieveDescriptionMeaning({ description: 'Young modulus' }, true, 'test'), true);
+  assert.equal(canRetrieveDescriptionMeaning({ description: '  ' }, true), false);
+  assert.equal(canRetrieveDescriptionMeaning({ description: 'Young modulus' }, true), true);
   const skipped = await suggestMeanings({ header: 'E_mod', description: '  ' }, {
     snapshotLoader: () => { throw Error('retrieval must not run'); },
   });
@@ -40,8 +35,21 @@ test('description retrieval skips blank text and retains contrasting candidates 
   assert.equal(result.candidates[1].supported, false);
 });
 
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
+test('glossary retrieval searches all vocabularies without an ontology ID', async () => {
+  const result = await retrieveCandidates({ description: 'Applied load', header: 'Force' }, {
+    snapshotLoader: async ({ ontologyId }) => {
+      assert.equal(ontologyId, undefined);
+      return null;
+    },
+    search: async ({ ontologyId }) => {
+      assert.equal(ontologyId, undefined);
+      return { terms: [terms[0]] };
+    },
+  });
+  assert.equal(result.candidates[0].iri, terms[0].iri);
+  assert.equal(result.source, 'Terminology Service fallback');
+});
+
 test('header-only columns can retrieve a meaning and explicit header unit', async () => {
   const retrieved = await retrieveCandidates({ description: '', header: 'Actuator force [kN]' }, {
     ontologyId: 'test', snapshotLoader: async () => ({ terms, fingerprint: 'header-only-test' }),

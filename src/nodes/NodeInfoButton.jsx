@@ -176,10 +176,7 @@ const instructions = {
       steps: [
         'Connect RDF-producing and tabular nodes directly to collect their outputs.',
         'Review the RDF triples, preview the Turtle, or download metadata.ttl.',
-<<<<<<< HEAD
         'Choose a dataset licence, or Unspecified if you cannot make a licence claim.',
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
         'Download the RO-Crate ZIP locally or connect this node to Coscine for upload.',
       ],
     },

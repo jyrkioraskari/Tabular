@@ -92,7 +92,7 @@ export function rankRememberedAnnotations(field, records, { vocabularyId = '' } 
   const currentUnitToken = explicitUnitToken(field.header);
   const candidates = (Array.isArray(records) ? records : []).flatMap((item) => {
     if (!item?.uri || !['meaning', 'unit'].includes(item.kind)) return [];
-    if (item.kind === 'meaning' && (item.vocabularyId || '') !== vocabularyId) return [];
+    if (item.kind === 'meaning' && vocabularyId && (item.vocabularyId || '') !== vocabularyId) return [];
     const previousUnitToken = explicitUnitToken(item.header);
     if (item.kind === 'unit' && currentUnitToken && currentUnitToken !== previousUnitToken) return [];
     const previousTokens = tokens(item.description);

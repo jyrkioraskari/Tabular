@@ -28,7 +28,6 @@ import pythonLogo from './assets/python-logo.svg';
 import n8nCommunityIcon from './assets/n8n-community.svg';
 import { fetchAimsApplicationProfileDefinition } from './services/aimsApi';
 import { serializeColumnDescriptionsToTurtle } from './services/columnDescriptionRdf';
-<<<<<<< HEAD
 import {
   downloadJsonFile,
   readJsonFile,
@@ -45,10 +44,6 @@ import { serializeTabularDataInWorker } from './services/tabularDataRdfService';
 import { parseTabularWorkbook } from './services/tabularWorkbook';
 import { collectN8nInputs, runN8nNode } from './services/n8nNodeClient';
 import { configuredDatasetLicense } from './services/roCrateExport';
-=======
-import { serializeTabularDataInWorker } from './services/tabularDataRdfService';
-import { parseTabularWorkbook } from './services/tabularWorkbook';
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 import tabularFileIcon from './assets/tabular-file-icon.png';
 import spreadsheetIcon from './assets/matt-icons_text-x-office-generic-spreadsheet.svg';
 import tabularSchemaIcon from './assets/tabular_schema.png';
@@ -66,15 +61,11 @@ const nodeHandlers = {
   onTabularTransposeChange: undefined,
   onTabularRdfConversionChange: undefined,
   onColumnDescriptionFieldsChange: undefined,
-  onTerminologyVocabularyChange: undefined,
   onMetadataRdfChange: undefined,
   onProfileSelect: undefined,
   onCoscineApplicationProfileLoaded: undefined,
   onCoscineUploadStateChange: undefined,
-<<<<<<< HEAD
   onDatasetLicenseChange: undefined,
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   onQuantityKindSelect: undefined,
   onPythonCodeChange: undefined,
   onPythonRun: undefined,
@@ -106,7 +97,7 @@ function ColumnDescriptionNodeType(props) {
 }
 
 function TerminologyNodeType(props) {
-  return <TerminologyNode {...props} onVocabularyChange={nodeHandlers.onTerminologyVocabularyChange} />;
+  return <TerminologyNode {...props} />;
 }
 
 function MetadataFormNodeType(props) {
@@ -173,11 +164,7 @@ const nodeTypes = {
   quantityKind: QuantityKindNodeType,
   unit: UnitNode,
   terminology: TerminologyNodeType,
-<<<<<<< HEAD
   roCrate: ROCrateNodeType,
-=======
-  roCrate: ROCrateNode,
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   coscine: CoscineNodeType,
   pythonScript: PythonNodeType,
   n8nCommunity: N8nCommunityNodeType,
@@ -190,12 +177,9 @@ const columnDescriptionRdfDebounceMs = 300;
  * The styling is visual only; data propagation is handled by deriveNodeData().
  */
 function getEdgeLabel(sourceType, targetType) {
-<<<<<<< HEAD
   if (targetType === 'n8nCommunity') return 'n8n input';
   if (sourceType === 'n8nCommunity' && targetType === 'pythonScript') return 'n8n result';
   if (targetType === 'pythonScript') return 'python input';
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   if (sourceType === 'metadataForm' && targetType === 'roCrate') return 'metadata';
   if (sourceType === 'metadataForm' && targetType === 'coscine') return 'metadata';
   if (sourceType === 'columnDescription' && targetType === 'roCrate') {
@@ -259,13 +243,9 @@ function applySemanticEdgeStyle(edge, nodes, invalidated = false) {
     ].includes(sourceType) && targetType === 'roCrate') ||
     (sourceType === 'roCrate' && targetType === 'coscine') ||
     (sourceType === 'coscine' && targetType === 'metadataForm') ||
-<<<<<<< HEAD
     (sourceType === 'metadataForm' && targetType === 'coscine') ||
     targetType === 'pythonScript' ||
     targetType === 'n8nCommunity'
-=======
-    (sourceType === 'metadataForm' && targetType === 'coscine')
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   ) {
     const color = invalidated ? '#dc2626' : tabularPreviewEdgeStyle.stroke;
     return {
@@ -307,7 +287,6 @@ function isSupportedConnection(connection, nodes, edges = []) {
     }
   }
 
-<<<<<<< HEAD
   // Python script nodes are sinks: any node may feed them, they feed nothing.
   if (targetType === 'pythonScript') {
     return true;
@@ -316,8 +295,6 @@ function isSupportedConnection(connection, nodes, edges = []) {
     return Boolean(sourceType) && connection.source !== connection.target;
   }
 
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   return (
     (sourceType === 'tabularFile' &&
       ['previewTabular', 'columnDescription', 'headerSchema', 'roCrate'].includes(
@@ -458,11 +435,7 @@ function createWorkflowTemplate(templateType, language) {
     {
       id: 'template-columns',
       type: 'columnDescription',
-<<<<<<< HEAD
       position: { x: 1080, y: 60 },
-=======
-      position: { x: 1040, y: 60 },
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       data: { label: 'Column Descriptions 1', language, fields: [] },
     },
     {
@@ -492,12 +465,8 @@ function createWorkflowTemplate(templateType, language) {
     {
       id: 'template-ro-crate',
       type: 'roCrate',
-<<<<<<< HEAD
       // Column Descriptions can expand to 1100px while its review workspace is open.
       position: { x: 2320, y: 100 },
-=======
-      position: { x: 1650, y: 100 },
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       data: { label: 'RO-Crate 1', language },
     },
   ];
@@ -597,7 +566,6 @@ const globalLanguageOptions = [
 const appText = {
   en: {
     sidebarHeading: 'Tabular Data Management',
-<<<<<<< HEAD
     nodesHeading: 'Nodes',
     addNodeLabel: (label) => `Add ${label}`,
     templatesHeading: 'Workflow templates',
@@ -607,11 +575,6 @@ const appText = {
     exportPrivacyNote:
       'The exported file contains node settings and any text you entered; it does not contain the loaded spreadsheet data.',
     importFile: 'Import JSON…',
-=======
-    sidebarIntro: 'Drag a button into the canvas to create a node where you drop it.',
-    templatesHeading: 'Workflow templates',
-    templatesIntro: 'Choose a starting workflow. This replaces the current canvas.',
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     coscineTemplate: 'Coscine workflow',
     coscineTemplateDescription: 'Prepare an RO-Crate and deposit it with Coscine metadata.',
     roCrateTemplate: 'RO-Crate workflow',
@@ -639,7 +602,6 @@ const appText = {
   },
   de: {
     sidebarHeading: 'Management von tabellarischen Daten',
-<<<<<<< HEAD
     nodesHeading: 'Knoten',
     addNodeLabel: (label) => `${label} hinzufügen`,
     templatesHeading: 'Workflow-Vorlagen',
@@ -649,12 +611,6 @@ const appText = {
     exportPrivacyNote:
       'Die exportierte Datei enthaelt Knoteneinstellungen und eingegebene Texte, aber nicht die geladenen Tabellendaten.',
     importFile: 'JSON importieren…',
-=======
-    sidebarIntro:
-      'Ziehe eine Schaltfläche auf die Arbeitsfläche, um an der Stelle, an der du sie ablegst, einen Knoten zu erstellen.',
-    templatesHeading: 'Workflow-Vorlagen',
-    templatesIntro: 'Waehle einen Start-Workflow. Die aktuelle Arbeitsflaeche wird ersetzt.',
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     coscineTemplate: 'Coscine-Workflow',
     coscineTemplateDescription: 'RO-Crate vorbereiten und mit Coscine-Metadaten ablegen.',
     roCrateTemplate: 'RO-Crate-Workflow',
@@ -687,7 +643,6 @@ const appText = {
  * preserving any descriptions and units already entered for unchanged headers.
  */
 function buildColumnDescriptionFields(headers, previousFields = [], columnNotes = []) {
-<<<<<<< HEAD
   const usedPreviousIndexes = new Set();
 
   return headers.map((header, index) => {
@@ -700,14 +655,6 @@ function buildColumnDescriptionFields(headers, previousFields = [], columnNotes 
     }
     if (previousIndex >= 0) usedPreviousIndexes.add(previousIndex);
     const existing = previousFields[previousIndex];
-=======
-  const previousByHeader = new Map(
-    previousFields.map((field) => [field.header, field]),
-  );
-
-  return headers.map((header, index) => {
-    const existing = previousByHeader.get(header);
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
     return {
       header,
@@ -814,13 +761,9 @@ function buildWorkflowChecklist(nodes, checklistText, checkedStepKeys = new Set(
 
   const crateNodes = nodes.filter((node) => node.type === 'roCrate');
   const readyCrateNode =
-<<<<<<< HEAD
     crateNodes.find((node) =>
       (node.data.jsonLdContent?.jsonLd ?? '').trim() !== '' &&
       Boolean(configuredDatasetLicense(node.data.sheets) || node.data.datasetLicense)) ?? null;
-=======
-    crateNodes.find((node) => (node.data.jsonLdContent?.jsonLd ?? '').trim() !== '') ?? null;
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   steps.push({
     key: 'crate',
     label: checklistText.crate,
@@ -833,12 +776,8 @@ function buildWorkflowChecklist(nodes, checklistText, checkedStepKeys = new Set(
     const uploadState = coscineNode.data.coscineUploadState ?? {};
     const crateReady = Boolean(
       (coscineNode.data.roCrateInput?.jsonLdContent?.jsonLd ?? '').trim(),
-<<<<<<< HEAD
     ) && Boolean(configuredDatasetLicense(coscineNode.data.roCrateInput?.sheets)
       || coscineNode.data.roCrateInput?.datasetLicense);
-=======
-    );
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     const metadataReady = Boolean(
       (coscineNode.data.roCrateInput?.metadataContent ?? '').trim(),
     );
@@ -960,10 +899,7 @@ function recalculateFlows(nodes, edges, tabularMemory) {
             data: {
               ...node.data,
               fields: buildColumnDescriptionFields(payload.headers, node.data.fields, payload.columnNotes),
-<<<<<<< HEAD
               rows: payload.rows,
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
               sheetName: payload.sheetName,
               workbookKey: `${payload.sourceIdentity}:${payload.sheetName}:${payload.headers.join('|')}:${(payload.columnNotes || []).join('|')}`,
             },
@@ -973,10 +909,7 @@ function recalculateFlows(nodes, edges, tabularMemory) {
             data: {
               ...node.data,
               fields: [],
-<<<<<<< HEAD
               rows: [],
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
               sheetName: '',
               workbookKey: '',
             },
@@ -990,10 +923,7 @@ function recalculateFlows(nodes, edges, tabularMemory) {
           ...node.data,
           sheets: payload?.sheets ?? [],
           sourceFile: payload?.sourceFile ?? null,
-<<<<<<< HEAD
           selectedSheetName: payload?.sheetName ?? '',
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
         },
       };
     }
@@ -1155,11 +1085,8 @@ function propagateCoscineInputs(nodes, edges) {
         sheets: sourceData.sheets ?? [],
         columnDescriptions: sourceData.csvwColumnDescriptions ?? [],
         sourceFile: sourceData.sourceFile ?? null,
-<<<<<<< HEAD
         selectedSheetName: sourceData.selectedSheetName ?? '',
         datasetLicense: sourceData.datasetLicense ?? '',
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       });
     }
 
@@ -1289,7 +1216,6 @@ function annotateColumnDescriptionServiceInputs(nodes, edges) {
   const nodeTypesById = new Map(nodes.map((node) => [node.id, node.type]));
   const nodeDataById = new Map(nodes.map((node) => [node.id, node.data]));
   const terminologyColumnNodeIds = new Set();
-  const vocabularyByColumnNodeId = new Map();
   const unitInputByColumnNodeId = new Map();
 
   for (const edge of edges) {
@@ -1302,7 +1228,6 @@ function annotateColumnDescriptionServiceInputs(nodes, edges) {
 
     if (sourceType === 'terminology') {
       terminologyColumnNodeIds.add(edge.target);
-      vocabularyByColumnNodeId.set(edge.target, nodeDataById.get(edge.source)?.selectedVocabularyId || '');
     }
 
     if (sourceType === 'unit') {
@@ -1324,7 +1249,7 @@ function annotateColumnDescriptionServiceInputs(nodes, edges) {
       data: {
         ...node.data,
         terminologyInput: terminologyColumnNodeIds.has(node.id),
-        selectedVocabularyId: vocabularyByColumnNodeId.get(node.id) || '',
+        selectedVocabularyId: '',
         unitInput: unitInputByColumnNodeId.get(node.id) ?? null,
       },
     };
@@ -1428,12 +1353,7 @@ export default function App() {
     if (!canvas || !checklist) return undefined;
 
     const updateChecklistFit = () => {
-<<<<<<< HEAD
       setChecklistFits(checklist.offsetWidth <= canvas.clientWidth - 24);
-=======
-      // Leave space on both sides for the language selector and a clear margin.
-      setChecklistFits(checklist.offsetWidth <= canvas.clientWidth - 220);
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     };
     const observer = new ResizeObserver(updateChecklistFit);
     observer.observe(canvas);
@@ -1447,10 +1367,7 @@ export default function App() {
     nodeIds: startupWorkflow.nodes.map((node) => node.id),
   }));
   const [connectionNotice, setConnectionNotice] = useState(null);
-<<<<<<< HEAD
   const importInputRef = useRef(null);
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   const nodeIdCountRef = useRef(startupWorkflow.nodes.length);
   const nodeTypeCountsRef = useRef(buildNodeTypeCounts(startupWorkflow.nodes));
   const nodesRef = useRef(nodes);
@@ -1487,7 +1404,6 @@ export default function App() {
         controller.abort();
       }
       tabularRdfConversionsRef.current.clear();
-<<<<<<< HEAD
       for (const controller of pythonRunsRef.current.values()) {
         controller.abort();
       }
@@ -1496,8 +1412,6 @@ export default function App() {
       }
       pythonRunsRef.current.clear();
       n8nRunsRef.current.clear();
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       for (const timeoutId of columnDescriptionRdfTimersRef.current.values()) {
         window.clearTimeout(timeoutId);
       }
@@ -1630,17 +1544,6 @@ export default function App() {
     },
     [setNodes],
   );
-
-  const onTerminologyVocabularyChange = useCallback((nodeId, selectedVocabularyId) => {
-    setNodes((currentNodes) => {
-      const updated = currentNodes.map((node) => node.id === nodeId
-        ? { ...node, data: { ...node.data, selectedVocabularyId } }
-        : node);
-      const derived = annotateColumnDescriptionServiceInputs(updated, edgesRef.current);
-      nodesRef.current = derived;
-      return derived;
-    });
-  }, [setNodes]);
 
   const onTabularLoaded = useCallback(
     (nodeId, fileName, buffer, hasHeader, transpose, manualTranspose = false, manualHeader = false) => {
@@ -1944,7 +1847,6 @@ export default function App() {
     [setNodes],
   );
 
-<<<<<<< HEAD
   const onDatasetLicenseChange = useCallback((nodeId, datasetLicense) => {
     setNodes((currentNodes) => {
       const changedNodes = currentNodes.map((node) => node.id === nodeId
@@ -1956,8 +1858,6 @@ export default function App() {
     });
   }, [setNodes]);
 
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   const onQuantityKindSelect = useCallback(
     (nodeId, quantityKind) => {
       setNodes((currentNodes) => {
@@ -2006,7 +1906,6 @@ export default function App() {
     [setNodes],
   );
 
-<<<<<<< HEAD
   const getN8nInputs = useCallback((nodeId) => collectN8nInputs(
     nodesRef.current, edgesRef.current, nodeId, tabularMemoryRef.current,
   ), []);
@@ -2073,21 +1972,6 @@ export default function App() {
       if (n8nRunsRef.current.get(nodeId) === controller) n8nRunsRef.current.delete(nodeId);
     }
   }, [getN8nInputs, setNodes]);
-=======
-  Object.assign(nodeHandlers, {
-    onTabularLoaded,
-    onTabularHasHeaderChange,
-    onTabularTransposeChange,
-    onTabularRdfConversionChange,
-    onColumnDescriptionFieldsChange,
-    onTerminologyVocabularyChange,
-    onMetadataRdfChange,
-    onProfileSelect,
-    onCoscineApplicationProfileLoaded,
-    onCoscineUploadStateChange,
-    onQuantityKindSelect,
-  });
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
   const onConnect = useCallback(
     (connection) => {
@@ -2362,78 +2246,6 @@ export default function App() {
         return;
       }
 
-<<<<<<< HEAD
-=======
-      const rawTemplate = event.dataTransfer.getData('application/reactflow');
-
-      if (!rawTemplate) {
-        return;
-      }
-
-      event.preventDefault();
-
-      const template = JSON.parse(rawTemplate);
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
-      if (template.type === 'quantityKindAndUnit') {
-        const quantityKindCount = (nodeTypeCountsRef.current.quantityKind ?? 0) + 1;
-        const unitCount = (nodeTypeCountsRef.current.unit ?? 0) + 1;
-        nodeTypeCountsRef.current.quantityKind = quantityKindCount;
-        nodeTypeCountsRef.current.unit = unitCount;
-
-        nodeIdCountRef.current += 1;
-        const quantityKindId = `node-${nodeIdCountRef.current}`;
-        nodeIdCountRef.current += 1;
-        const unitId = `node-${nodeIdCountRef.current}`;
-        const addedNodes = [
-          {
-            id: quantityKindId,
-            type: 'quantityKind',
-            position,
-            data: {
-              label: `Quantity Kinds ${quantityKindCount}`,
-              language: globalLanguage,
-            },
-          },
-          {
-            id: unitId,
-            type: 'unit',
-            position: { x: position.x + 440, y: position.y },
-            data: {
-              label: `Units ${unitCount}`,
-              language: globalLanguage,
-            },
-          },
-        ];
-        const workingNodes = [...nodesRef.current, ...addedNodes];
-        const nextEdges = styleWorkflowEdges(
-          [
-            ...edgesRef.current,
-            {
-              id: `auto-${quantityKindId}-${unitId}`,
-              source: quantityKindId,
-              target: unitId,
-            },
-          ],
-          workingNodes,
-        );
-        const nextNodes = deriveNodeData(
-          workingNodes,
-          nextEdges,
-          tabularMemoryRef.current,
-        );
-
-        nodesRef.current = nextNodes;
-        edgesRef.current = nextEdges;
-        setNodes(nextNodes);
-        setEdges(nextEdges);
-        return;
-      }
-
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       nodeIdCountRef.current += 1;
       const nextTypeCount = (nodeTypeCountsRef.current[template.type] ?? 0) + 1;
       nodeTypeCountsRef.current[template.type] = nextTypeCount;
@@ -2454,7 +2266,6 @@ export default function App() {
         return nextNodes;
       });
     },
-<<<<<<< HEAD
     [globalLanguage, setEdges, setNodes],
   );
 
@@ -2701,7 +2512,6 @@ export default function App() {
     onTabularTransposeChange,
     onTabularRdfConversionChange,
     onColumnDescriptionFieldsChange,
-    onTerminologyVocabularyChange,
     onMetadataRdfChange,
     onProfileSelect,
     onCoscineApplicationProfileLoaded,
@@ -2877,163 +2687,6 @@ export default function App() {
         tabularMemoryRef.current,
       );
 
-=======
-    [globalLanguage, reactFlowInstance, setEdges, setNodes],
-  );
-
-  const applyWorkflowTemplate = useCallback(
-    (templateType) => {
-      const previousNodes = nodesRef.current;
-
-      // Capture the previous workflow's work before the refs are cleared, so
-      // it can be carried over into the new template where the node types match.
-      const previousTabularNode =
-        previousNodes.find((node) => node.type === 'tabularFile' && node.data.fileName) ??
-        previousNodes.find((node) => node.type === 'tabularFile') ??
-        null;
-      const previousTabularBuffer = previousTabularNode
-        ? tabularBuffersRef.current.get(previousTabularNode.id)
-        : undefined;
-      const previousTabularPreview = previousTabularNode
-        ? tabularMemoryRef.current.get(previousTabularNode.id)
-        : undefined;
-      const previousColumnNode = previousNodes.find(
-        (node) =>
-          ['columnDescription', 'headerSchema'].includes(node.type) &&
-          Array.isArray(node.data.fields) &&
-          node.data.fields.length > 0,
-      );
-      const previousColumnRdf = previousColumnNode &&
-        columnDescriptionRdfTimersRef.current.has(previousColumnNode.id)
-        ? serializeColumnDescriptionsToTurtle(previousColumnNode.data.fields)
-        : previousColumnNode?.data.serializedRdf ?? '';
-      const previousProfileFormNode = previousNodes.find(
-        (node) =>
-          node.type === 'metadataForm' &&
-          node.data.shapesSource === 'aims' &&
-          node.data.shapes,
-      );
-      const previousMetadataRdfNode = previousNodes.find(
-        (node) => node.type === 'metadataForm' && (node.data.serializedRdf ?? '').trim() !== '',
-      );
-      const previousCoscineProfile = previousNodes.find(
-        (node) => node.type === 'coscine' && node.data.coscineApplicationProfile,
-      )?.data.coscineApplicationProfile;
-      const previousQuantityKindNode = previousNodes.find(
-        (node) => node.type === 'quantityKind' && node.data.selectedQuantityKind,
-      );
-      const shouldConvertToRdf = previousTabularNode?.data.convertDataToRdf === true;
-
-      for (const controller of tabularRdfConversionsRef.current.values()) {
-        controller.abort();
-      }
-      for (const controller of profileDefinitionRequestsRef.current.values()) {
-        controller.abort();
-      }
-      for (const timeoutId of columnDescriptionRdfTimersRef.current.values()) {
-        window.clearTimeout(timeoutId);
-      }
-
-      tabularRdfConversionsRef.current.clear();
-      columnDescriptionRdfTimersRef.current.clear();
-      profileDefinitionRequestsRef.current.clear();
-      tabularMemoryRef.current.clear();
-      tabularBuffersRef.current.clear();
-
-      if (previousTabularBuffer) {
-        tabularBuffersRef.current.set('template-tabular', previousTabularBuffer);
-      }
-      if (previousTabularPreview) {
-        tabularMemoryRef.current.set('template-tabular', previousTabularPreview);
-      }
-
-      const template = createWorkflowTemplate(templateType, globalLanguage);
-      const templateNodesWithCarryOver = template.nodes.map((node) => {
-        if (node.id === 'template-tabular' && previousTabularNode && previousTabularBuffer) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              fileName: previousTabularNode.data.fileName,
-              hasHeader: previousTabularNode.data.hasHeader !== false,
-              hasHeaderManuallySet: previousTabularNode.data.hasHeaderManuallySet === true,
-              transpose: previousTabularNode.data.transpose === true,
-              transposeManuallySet: previousTabularNode.data.transposeManuallySet === true,
-              convertDataToRdf: shouldConvertToRdf,
-              rowCount: previousTabularNode.data.rowCount,
-              parameterRowCount: previousTabularNode.data.parameterRowCount,
-              layoutNote: previousTabularNode.data.layoutNote,
-              sheetName: previousTabularNode.data.sheetName,
-              rdfConversionState: shouldConvertToRdf ? 'queued' : '',
-            },
-          };
-        }
-
-        if (node.id === 'template-columns' && previousColumnNode) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              fields: previousColumnNode.data.fields,
-              serializedRdf: previousColumnRdf,
-            },
-          };
-        }
-
-        if (node.id === 'template-metadata-form') {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              ...(previousMetadataRdfNode
-                ? {
-                    carriedValuesRdf: previousMetadataRdfNode.data.serializedRdf,
-                    serializedRdf: previousMetadataRdfNode.data.serializedRdf,
-                  }
-                : {}),
-              ...(previousProfileFormNode
-                ? {
-                    shapes: previousProfileFormNode.data.shapes,
-                    shapesKey: previousProfileFormNode.data.shapesKey,
-                    profileName: previousProfileFormNode.data.profileName,
-                    profileBaseUri: previousProfileFormNode.data.profileBaseUri,
-                    shapesSource: 'aims',
-                  }
-                : {}),
-            },
-          };
-        }
-
-        if (node.id === 'template-coscine' && previousCoscineProfile) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              coscineApplicationProfile: previousCoscineProfile,
-              preselectedResourceKey: `${previousCoscineProfile.projectId}:${previousCoscineProfile.resourceId}`,
-            },
-          };
-        }
-
-        if (node.id === 'template-quantity-kinds' && previousQuantityKindNode) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              selectedQuantityKind: previousQuantityKindNode.data.selectedQuantityKind,
-            },
-          };
-        }
-
-        return node;
-      });
-      const nextNodes = deriveNodeData(
-        templateNodesWithCarryOver,
-        template.edges,
-        tabularMemoryRef.current,
-      );
-
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       nodeIdCountRef.current = nextNodes.length;
       nodeTypeCountsRef.current = buildNodeTypeCounts(nextNodes);
       nodesRef.current = nextNodes;
@@ -3061,7 +2714,6 @@ export default function App() {
 
   return (
     <div className="app-shell">
-<<<<<<< HEAD
       <header className="app-header">
         <div className="app-header__top">
           <img className="app-logo" src={rwthCaadLogo} alt="RWTH CAAD" />
@@ -3091,49 +2743,6 @@ export default function App() {
       </header>
       <aside className="sidebar">
         <h1 className="sidebar-title">{text.sidebarHeading}</h1>
-=======
-      <div className="global-language-selector" aria-label="Global language selection">
-        {globalLanguageOptions.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={`global-language-selector__button${
-              globalLanguage === option.value ? ' selected' : ''
-            }`}
-            onClick={() => onGlobalLanguageChange(option.value)}
-            aria-pressed={globalLanguage === option.value}
-            aria-label={option.label}
-            title={option.label}
-          >
-            <img
-              className="global-language-selector__icon"
-              src={option.iconSrc}
-              alt=""
-              aria-hidden="true"
-            />
-          </button>
-        ))}
-      </div>
-      {connectionNotice ? (
-        <div className="connection-notice" role="status" aria-live="polite">
-          <span className="connection-notice__icon" aria-hidden="true">!</span>
-          <p>{connectionNotice.message}</p>
-          <button
-            type="button"
-            className="connection-notice__dismiss"
-            onClick={() => setConnectionNotice(null)}
-            aria-label="Dismiss connection notice"
-          >
-            ×
-          </button>
-        </div>
-      ) : null}
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <img className="app-logo" src={rwthCaadLogo} alt="RWTH CAAD" />
-          <p className="eyebrow">{text.sidebarHeading}</p>
-        </div>
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
         <section className="workflow-templates" aria-labelledby="workflow-templates-heading">
           <h2 id="workflow-templates-heading">{text.templatesHeading}</h2>
           <p className="workflow-templates__intro">{text.templatesIntro}</p>
@@ -3164,7 +2773,6 @@ export default function App() {
             <span className="workflow-template-card__title">{text.roCrateTemplate}</span>
           </button>
         </section>
-<<<<<<< HEAD
         <section className="node-exchange" aria-label={text.workflowSharingLabel}>
           <div className="node-exchange__buttons">
             <button
@@ -3214,28 +2822,6 @@ export default function App() {
               ))}
             </div>
           </section>
-=======
-        <p className="intro">{text.sidebarIntro}</p>
-        <div className="sidebar-node-scroll">
-          <div className="node-palette">
-            {nodeTemplates.map((template) => (
-              <button
-                key={template.label}
-                type="button"
-                draggable
-                className={`drag-button${template.icon ? ' drag-button--with-icon' : ''}`}
-                onDragStart={(event) => onDragStart(event, template)}
-              >
-                <span className="drag-button__content">
-                  {template.icon ? (
-                    <img src={template.icon} alt="" className="drag-button__icon" />
-                  ) : null}
-                  <span>{template.label}</span>
-                </span>
-              </button>
-            ))}
-          </div>
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
         </div>
         <div className="sidebar-footer">
           <img className="sidebar-footer__logo" src={nfdi4ingLogo} alt="NFDI4Ing" />
@@ -3243,7 +2829,6 @@ export default function App() {
       </aside>
 
       <main className="canvas" ref={canvasRef} onDrop={onDrop} onDragOver={onDragOver}>
-<<<<<<< HEAD
         {connectionNotice ? (
           <div className="connection-notice" role="status" aria-live="polite">
             <span className="connection-notice__icon" aria-hidden="true">!</span>
@@ -3258,8 +2843,6 @@ export default function App() {
             </button>
           </div>
         ) : null}
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
         <nav
           ref={checklistRef}
           className={`workflow-checklist${checklistFits ? '' : ' workflow-checklist--hidden'}`}

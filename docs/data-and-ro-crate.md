@@ -66,12 +66,8 @@ For a local export, connect:
 - **Column Descriptions → RO-Crate** for field metadata; and
 - **Metadata Form → RO-Crate** for dataset metadata.
 
-<<<<<<< HEAD
 The preview and column-description nodes use the detected measurement worksheet.
 Every
-=======
-The preview and column-description nodes use the first worksheet. Every
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 worksheet is retained and exported as CSV under `original_data/`. When layered
 headers are flattened, their generated `*-header-details.csv` companion is
 placed under `original_data/extras/`. Formulas, formatting, macros, charts, and
@@ -99,15 +95,12 @@ The ZIP contains:
 
 ## Optional: configure the export
 
-<<<<<<< HEAD
 Before downloading or uploading, choose the dataset licence in the RO-Crate
 node. If you cannot make a licence claim, choose **Unspecified**; the package
 then omits its licence property. An `export_config` licence takes precedence and
 is shown in the node. Do not select CC BY 4.0 unless you have the rights to
 release the dataset under that licence.
 
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 Add an `export_config` worksheet with `key` and `value` columns:
 
 | key | value |
@@ -121,11 +114,8 @@ Recognised keys are `dataset_id`, `dataset_name`, `dataset_title`,
 `dataset_label`, `title`, `dataset_description`, `description`, and `license`.
 The dataset identifier or name determines the ZIP filename. The
 `export_config` worksheet is also included as a CSV.
-<<<<<<< HEAD
 The CSVW descriptions and units follow the measurement sheet shown in the
 preview, including when a report sheet appears first in the workbook.
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
 ---
 

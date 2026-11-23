@@ -34,17 +34,12 @@ header.
 Alternatively, connect **Terminology Service → Column Descriptions**. Each
 description field then searches concepts while you type; choose a suggestion to
 store its persistent IRI without dragging. Your typed description is preserved.
-<<<<<<< HEAD
 Dragging still works. To compare glossary suggestions, enter a nonblank
 description and choose **Review** beside the column. The review shows the
 original header, description, unit, sample values, and candidate definitions.
 Choose **Accept** to record a candidate's identifier. You can also leave the
 column unresolved; inspecting alternatives does not change an accepted term.
 For a header without a description, use the manual search or drag route.
-=======
-Dragging still works. Strong, unambiguous suggestions may be linked
-automatically; other candidates remain in the review panel.
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
 Tabular displays the readable label and retains the IRI. Hover over the linked
 value to inspect it. Choose a concept because its definition matches the data,
@@ -60,17 +55,8 @@ not merely because its label resembles the header.
 This copies the selected unit into that field. Alternatively, connect
 **Units → Column Descriptions** to filter QUDT search by the selected quantity
 kind. You can also type in the Unit field and search QUDT without that
-<<<<<<< HEAD
 connection. Dragging still works. A suggested unit can be accepted in the
 column review.
-=======
-connection. Dragging still works. An explicit, unique unit may be filled
-automatically.
-
-An automatically applied value appears by name with **Change**. Choose
-**Change** to edit or search for another value, or drag a replacement. Tabular
-does not replace an existing value automatically after you edit it.
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
 The QUDT URI distinguishes units that may have similar names or symbols. Do not
 add units to identifiers, categories, free text, or genuinely unitless values.
@@ -82,13 +68,10 @@ the described column and, where selected, the concept and unit identifiers.
 Column descriptions are updated automatically; they have no separate Save
 button.
 
-<<<<<<< HEAD
 To restore accepted annotations when you reopen the same dataset in this
 browser, enable **Remember column annotations in this browser**. The exported
 RO-Crate uses the accepted identifiers and original spreadsheet values.
 
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 ## How Tabular represents columns
 
 Tabular uses established vocabularies rather than a private column ontology:

@@ -231,11 +231,7 @@ export default function CoscineNode({
   useEffect(() => {
     // A previously completed upload no longer matches this token/resource pair.
     setUploadState('idle');
-<<<<<<< HEAD
   }, [apiToken, datasetLicense, selectedResourceKey]);
-=======
-  }, [apiToken, selectedResourceKey]);
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
   useEffect(() => {
     onUploadStateChange?.(id, {
@@ -257,11 +253,8 @@ export default function CoscineNode({
         sheets: data.roCrateInput?.sheets,
         columnDescriptions: data.roCrateInput?.columnDescriptions,
         sourceFile: data.roCrateInput?.sourceFile,
-<<<<<<< HEAD
         selectedSheetName: data.roCrateInput?.selectedSheetName,
         datasetLicense,
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       });
 
       setStatus('Uploading RO-Crate...');

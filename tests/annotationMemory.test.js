@@ -33,6 +33,7 @@ test('header-only columns can reuse history within the same vocabulary', () => {
   assert.equal(findRememberedAnnotations({ header: 'Force [kN]', description: '' }, records, { vocabularyId: 'A' }).meaning?.uri, records[0].uri);
   assert.equal(findRememberedAnnotations({ header: '', description: '' }, records, { vocabularyId: 'A' }).meaning, null);
   assert.equal(findRememberedAnnotations({ header: 'Force [kN]', description: 'Applied force' }, records, { vocabularyId: 'B' }).meaning, null);
+  assert.equal(findRememberedAnnotations({ header: 'Force [kN]', description: 'Applied force' }, records, { vocabularyId: '' }).meaning?.uri, records[0].uri);
 });
 
 test('conflicting explicit unit symbols prevent a reused unit suggestion', () => {

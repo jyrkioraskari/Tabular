@@ -92,7 +92,6 @@ test('uses a measurement sheet after a report and names columns from layered hea
       sheet.name === 'Measurements_header_details' && sheet.exportGroup === 'extras',
   ));
 });
-<<<<<<< HEAD
 
 test('keeps values from duplicate headers in separate export columns', () => {
   const parsed = parseTabularWorkbook(workbookBuffer({
@@ -106,5 +105,3 @@ test('keeps values from duplicate headers in separate export columns', () => {
     A: 'left', A_3: 'right', A_2: 'original suffix',
   });
 });
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571

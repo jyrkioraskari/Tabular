@@ -6,11 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { proxyRdfResource } from './rdfProxy.js';
 import { proxyAnnotationRerank } from './annotationRerankProxy.js';
 import { handleGroupAnnotationMemory } from './groupAnnotationMemoryServer.js';
-<<<<<<< HEAD
 import { handlePythonNodeRun, PYTHON_NODE_RUN_PATH } from './pythonNodeServer.js';
 import { handleN8nNodeRun, N8N_NODE_RUN_PATH } from './n8nNodeServer.js';
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
 const defaultPort = Number(process.env.PORT) || 4173;
 const distDir = resolve(fileURLToPath(new URL('./dist', import.meta.url)));
@@ -191,7 +188,6 @@ export function createTabularRdmServer() {
         await handleGroupAnnotationMemory(request, response);
         return;
       }
-<<<<<<< HEAD
       if (request.url.startsWith(PYTHON_NODE_RUN_PATH) && request.method === 'POST') {
         await handlePythonNodeRun(request, response);
         return;
@@ -200,8 +196,6 @@ export function createTabularRdmServer() {
         await handleN8nNodeRun(request, response);
         return;
       }
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       if (request.url.startsWith('/rdf-resource')) {
         await proxyRdfResource(request, response);
         return;

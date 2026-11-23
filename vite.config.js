@@ -3,11 +3,8 @@ import react from '@vitejs/plugin-react';
 import { proxyRdfResource } from './rdfProxy.js';
 import { proxyAnnotationRerank } from './annotationRerankProxy.js';
 import { handleGroupAnnotationMemory } from './groupAnnotationMemoryServer.js';
-<<<<<<< HEAD
 import { handleN8nNodeRun, N8N_NODE_RUN_PATH } from './n8nNodeServer.js';
 import { handlePythonNodeRun, PYTHON_NODE_RUN_PATH } from './pythonNodeServer.js';
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
 const coscineApiOrigin = 'https://coscine.rwth-aachen.de';
 const aimsApiOrigin = 'https://aims-backend.tools.coscine.dev';
@@ -93,7 +90,6 @@ export default defineConfig({
             await handleGroupAnnotationMemory(request, response);
             return;
           }
-<<<<<<< HEAD
           if (request.url === N8N_NODE_RUN_PATH) {
             await handleN8nNodeRun(request, response);
             return;
@@ -102,8 +98,6 @@ export default defineConfig({
             await handlePythonNodeRun(request, response);
             return;
           }
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
           if (request.url?.startsWith('/rdf-resource')) {
             await proxyRdfResource(request, response);
             return;

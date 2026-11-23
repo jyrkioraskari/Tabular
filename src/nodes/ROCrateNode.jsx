@@ -4,16 +4,11 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import roCrateLogo from '../assets/RO-Crate.png';
-<<<<<<< HEAD
 import { configuredDatasetLicense, createROCratePackage } from '../services/roCrateExport';
-=======
-import { createROCratePackage } from '../services/roCrateExport';
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 import { countTurtleTriplesInWorker } from '../services/rdfTripleCountService';
 import NodeHandle from './NodeHandle';
 import NodeInfoButton from './NodeInfoButton';
 
-<<<<<<< HEAD
 export default function ROCrateNode({ id, data, selected, onLicenseChange }) {
   const [tripleCount, setTripleCount] = useState(0);
   const [rdfStatus, setRdfStatus] = useState('');
@@ -21,12 +16,6 @@ export default function ROCrateNode({ id, data, selected, onLicenseChange }) {
   const [downloadError, setDownloadError] = useState('');
   const configuredLicense = configuredDatasetLicense(data.sheets);
   const chosenLicense = configuredLicense || data.datasetLicense || '';
-=======
-export default function ROCrateNode({ data, selected }) {
-  const [tripleCount, setTripleCount] = useState(0);
-  const [rdfStatus, setRdfStatus] = useState('');
-  const [rdfError, setRdfError] = useState('');
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   const turtleContent = data.jsonLdContent?.jsonLd?.trim() || '';
   const pendingRdfInputs = data.pendingRdfInputs ?? [];
   const pendingInputNames = pendingRdfInputs.length === 1
@@ -88,7 +77,6 @@ export default function ROCrateNode({ data, selected }) {
       return;
     }
 
-<<<<<<< HEAD
     setDownloadError('');
     try {
       const cratePackage = await createROCratePackage({
@@ -112,24 +100,6 @@ export default function ROCrateNode({ data, selected }) {
       setDownloadError(error?.message || 'Could not create the RO-Crate.');
     }
   }, [chosenLicense, data.csvwColumnDescriptions, data.jsonLdContent, data.selectedSheetName, data.sheets, data.sourceFile]);
-=======
-    const cratePackage = await createROCratePackage({
-      jsonLdContent: data.jsonLdContent,
-      sheets: data.sheets,
-      columnDescriptions: data.csvwColumnDescriptions,
-      sourceFile: data.sourceFile,
-    });
-    const url = URL.createObjectURL(cratePackage.blob);
-    const link = document.createElement('a');
-
-    link.href = url;
-    link.download = cratePackage.fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-  }, [data.csvwColumnDescriptions, data.jsonLdContent, data.sheets, data.sourceFile]);
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
   const canDownload = Boolean(data.jsonLdContent?.jsonLd && chosenLicense);
 
@@ -151,7 +121,6 @@ export default function ROCrateNode({ data, selected }) {
       <p className="rdf-node__count">{tripleCount} triples in RO-Crate</p>
       {displayStatus ? <p className="ro-crate-node__status">{displayStatus}</p> : null}
       {rdfError ? <p className="rdf-node__error">{rdfError}</p> : null}
-<<<<<<< HEAD
       {configuredLicense ? (
         <p className="ro-crate-node__status">Dataset licence from export_config: {configuredLicense}</p>
       ) : (
@@ -166,8 +135,6 @@ export default function ROCrateNode({ data, selected }) {
       )}
       {!chosenLicense ? <p className="ro-crate-node__status">Choose a dataset licence before export or upload.</p> : null}
       {downloadError ? <p className="rdf-node__error" role="alert">{downloadError}</p> : null}
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       <button
         type="button"
         className="ro-crate-node__button nodrag"

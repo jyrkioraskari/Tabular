@@ -17,10 +17,7 @@ Open <http://localhost:5173/>.
 ## Test the production bundle
 
 ```sh
-<<<<<<< HEAD
 npm test
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 npm run build
 npm run serve
 ```
@@ -66,13 +63,10 @@ npm run dist:windows
 Artifacts are written to `release/`. Public executables should be signed with
 the institution's code-signing certificate and tested on clean Windows 10 and
 Windows 11 systems using a non-administrator account.
-<<<<<<< HEAD
 Before release, inspect the packaged `app.asar` for `server.js`, its imported
 root modules, `LICENSE`, `THIRD_PARTY_LICENSES.md`, and
 `THIRD_PARTY_PROVENANCE.md`. Resolve the asset origin questions recorded in
 `THIRD_PARTY_PROVENANCE.md` before publishing a new binary.
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
 ## Code map
 
@@ -82,7 +76,6 @@ For the complete suggestion, memory, and auto-application flow, see the [column 
 - `src/nodes/` contains workflow node interfaces.
 - `src/services/` contains metadata, vocabulary, RDF, RO-Crate, and Coscine
   logic.
-<<<<<<< HEAD
 - `src/services/nodeExchange.js` serializes, sanitizes, and validates JSON
   workflow/node exports and imports (shape and known-type checks only; shared
   files are never evaluated). Nodes of `untrustedTypes` (Python script nodes)
@@ -103,8 +96,6 @@ For the complete suggestion, memory, and auto-application flow, see the [column 
   `src/services/n8nNodeClient.js` collects connected node snapshots and calls
   the bridge; `src/nodes/N8nCommunityNode.jsx` is the canvas UI. Community
   packages execute in the user's n8n instance, not in Tabular.
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 - `server.js` serves the production bundle and provides loopback-only service
   proxies.
 - `electron/main.js` starts the local server and desktop window.

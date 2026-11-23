@@ -4,13 +4,8 @@ import JSZip from 'jszip';
 
 const DEFAULT_CRATE_NAME = 'Research dataset';
 const DEFAULT_CRATE_DESCRIPTION = 'Research dataset packaged as an RO-Crate.';
-<<<<<<< HEAD
 const DEFAULT_LICENSE_ID = 'https://creativecommons.org/licenses/by/4.0/';
 export const UNSPECIFIED_DATASET_LICENSE = 'unspecified';
-=======
-const DEFAULT_LICENSE_NAME = 'Creative Commons Attribution 4.0 International';
-const DEFAULT_LICENSE_ID = 'https://creativecommons.org/licenses/by/4.0/';
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 const RO_CRATE_VERSION = '1.3';
 const RO_CRATE_SPEC_ID = `https://w3id.org/ro/crate/${RO_CRATE_VERSION}`;
 const RO_CRATE_CONTEXT_ID = `${RO_CRATE_SPEC_ID}/context`;
@@ -155,14 +150,10 @@ export function createCsvwMetadata({
   );
   const usedNames = new Set();
   const columns = headers.map((header, index) => {
-<<<<<<< HEAD
     const indexedField = normalizedColumnDescriptions[index];
     const field = indexedField?.header === header
       ? indexedField
       : descriptionsByHeader.get(header) ?? indexedField ?? {};
-=======
-    const field = descriptionsByHeader.get(header) ?? normalizedColumnDescriptions[index] ?? {};
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     const description = String(field.description ?? '').trim();
     const propertyUrl = String(field.descriptionUri ?? '').trim();
     const unitIri = csvwUnitIri(field);
@@ -232,11 +223,7 @@ export async function createROCrateZip(options = {}) {
     files = [],
     crateName = DEFAULT_CRATE_NAME,
     description = DEFAULT_CRATE_DESCRIPTION,
-<<<<<<< HEAD
     datasetLicense,
-=======
-    datasetLicense = DEFAULT_LICENSE_NAME,
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   } = options;
 
   const crate = new ROCrate();
@@ -244,22 +231,15 @@ export async function createROCrateZip(options = {}) {
   const normalizedCrateName = String(crateName ?? '').trim() || DEFAULT_CRATE_NAME;
   const normalizedDescription =
     String(description ?? '').trim() || DEFAULT_CRATE_DESCRIPTION;
-<<<<<<< HEAD
   const normalizedLicense = String(datasetLicense ?? '').trim();
   if (!normalizedLicense) {
     throw new Error('Choose a dataset licence before creating the RO-Crate.');
   }
-=======
-  const normalizedLicense =
-    String(datasetLicense ?? '').trim() || DEFAULT_LICENSE_NAME;
-  const licenseId = resolveLicenseId(normalizedLicense);
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
   crate.rootDataset.name = normalizedCrateName;
   crate.rootDataset.description = normalizedDescription;
   crate.rootDataset.datePublished = new Date().toISOString().split('T')[0];
 
-<<<<<<< HEAD
   if (normalizedLicense !== UNSPECIFIED_DATASET_LICENSE) {
     const licenseId = resolveLicenseId(normalizedLicense);
     crate.addEntity({
@@ -270,16 +250,6 @@ export async function createROCrateZip(options = {}) {
     });
     crate.rootDataset.license = { '@id': licenseId };
   }
-=======
-  const license = {
-    '@id': licenseId,
-    '@type': 'CreativeWork',
-    name: normalizedLicense,
-    description: `${normalizedLicense} license.`,
-  };
-  crate.addEntity(license);
-  crate.rootDataset.license = { '@id': licenseId };
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 
   const zip = new JSZip();
   const fileRefs = [];
@@ -321,11 +291,8 @@ export async function createROCratePackage({
   sheets = [],
   columnDescriptions = [],
   sourceFile = null,
-<<<<<<< HEAD
   selectedSheetName = '',
   datasetLicense = '',
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
 } = {}) {
   if (!jsonLdContent?.jsonLd) {
     throw new Error('Connect RDF content to build an RO-Crate first.');
@@ -343,19 +310,14 @@ export async function createROCratePackage({
     config.dataset_title || config.dataset_label || config.title || datasetId;
   const datasetDescription =
     config.dataset_description || config.description || DEFAULT_CRATE_DESCRIPTION;
-<<<<<<< HEAD
   const resolvedLicense = String(config.license || datasetLicense).trim();
   if (!resolvedLicense) {
     throw new Error('Choose a dataset licence before creating the RO-Crate.');
   }
-=======
-  const datasetLicense = config.license || DEFAULT_LICENSE_NAME;
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
   const excelPayload = originalExcelPayload(sourceFile);
   const usedFileNames = new Set();
   const sheetFiles = sheets.flatMap((sheet, index) => {
     const headers = sheetHeaders(sheet);
-<<<<<<< HEAD
     const columnKeys = Array.isArray(sheet.columnKeys) && sheet.columnKeys.length === headers.length
       ? sheet.columnKeys
       : headers;
@@ -363,9 +325,6 @@ export async function createROCratePackage({
       headers,
       ...sheet.rows.map((row) => columnKeys.map((key) => row[key] ?? '')),
     ]);
-=======
-    const worksheet = XLSX.utils.json_to_sheet(sheet.rows, { header: headers });
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     const csvContent = XLSX.utils.sheet_to_csv(worksheet);
     const baseSlug = slugifyCrateValue(sheet.name || `sheet_${index + 1}`);
     let slug = baseSlug;
@@ -396,13 +355,9 @@ export async function createROCratePackage({
     const csvwMetadata = createCsvwMetadata({
       csvFileName,
       sheet: { ...sheet, headers },
-<<<<<<< HEAD
       columnDescriptions: sheet.name === (selectedSheetName || sheets[0]?.name)
         ? columnDescriptions
         : [],
-=======
-      columnDescriptions: index === 0 ? columnDescriptions : [],
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
     });
 
     return [{

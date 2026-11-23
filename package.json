@@ -57,7 +57,6 @@
       "electron/**/*",
       "server.js",
       "rdfProxy.js",
-<<<<<<< HEAD
       "annotationRerankProxy.js",
       "groupAnnotationMemoryServer.js",
       "pythonNodeServer.js",
@@ -65,8 +64,6 @@
       "LICENSE",
       "THIRD_PARTY_LICENSES.md",
       "THIRD_PARTY_PROVENANCE.md",
-=======
->>>>>>> baa438668abdbef539b592d4f09a2e9066ccf571
       "package.json",
       "!node_modules/**/*"
     ],
