@@ -7,6 +7,8 @@ place.
 
 ![The Tabular workflow canvas](screen2.png)
 
+Free for all of us, forever.
+
 ## Start Tabular
 
 ### Windows
